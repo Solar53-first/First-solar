@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Solar - Boutique VIP</title>
+    <style>
+        :root {
+            --primary: #f39c12;
+            --primary-dark: #d35400;
+            --dark-bg: rgba(0, 0, 0, 0.85);
+            --glass: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(30, 30, 30, 0.95);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: url('IMG_2991.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            padding-bottom: 100px; /* Espace pour le menu bas */
+        }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); z-index: -1;
+        }
+
+        /* --- Header & Solde --- */
+        header {
+            background: var(--dark-bg);
+            padding: 15px;
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            position: sticky; top: 0; z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .balance-header {
+            background: linear-gradient(to right, rgba(243, 156, 18, 0.2), transparent);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass);
+            margin-bottom: 10px;
+        }
+        
+        .balance-label { font-size: 0.9em; opacity: 0.8; }
+        .balance-amount { font-size: 1.4em; font-weight: bold; color: var(--primary); }
+
+        /* --- Conteneur Liste --- */
+        .container {
+            padding: 10px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* --- Style Horizontal des Cartes Produits --- */
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--glass);
+            padding: 12px;
+            display: flex;
+            flex-direction: row; /* Disposition horizontale */
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        /* Section Icône (Gauche) */
+        .icon-section {
+            flex-shrink: 0;
+            margin-right: 15px;
+            text-align: center;
+        }
+
+        .solar-icon {
+            width: 50px; height: 50px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3);
+        }
+        .solar-icon svg { fill: white; width: 30px; height: 30px; }
+
+        .vip-badge {
+            margin-top: 5px;
+            background: #222;
+            color: var(--primary);
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            display: inline-block;
+            border: 1px solid var(--primary);
+        }
+
+        /* Section Détails (Milieu) */
+        .details-section {
+            flex-grow: 1;
+        }
+
+        .price {
+            font-size: 1.2em; font-weight: bold; margin: 0 0 8px 0;
+            color: white;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            font-size: 0.75em; color: #ccc;
+        }
+        .stats-grid div span { color: var(--primary); font-weight: bold; display: block; }
+
+        /* Section Action (Droite) */
+        .action-section {
+            flex-shrink: 0;
+            margin-left: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .btn-buy {
+            background: var(--primary); color: black; border: none;
+            padding: 10px 15px; border-radius: 8px;
+            font-weight: bold; cursor: pointer; font-size: 0.9em;
+            white-space: nowrap;
+        }
+        .btn-buy:hover { background: #ffb433; }
+
+        /* --- Bottom Nav --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #111; display: flex; justify-content: space-around;
+            padding: 15px 0; border-top: 1px solid var(--glass); z-index: 100;
+        }
+        .nav-item { color: #666; text-decoration: none; font-size: 0.8em; text-align: center; }
+        .nav-item.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<header>
+    <h2 style="margin:0;">BOUTIQUE SOLAIRE</h2>
+</header>
+
+<div class="balance-header">
+    <div class="balance-label">Votre Solde Disponible :</div>
+    <div class="balance-amount">0.00 CDF</div>
+</div>
+
+<div class="container">
+
+    <div class="product-card">
+        <div class="icon-section">
+            <div class="solar-icon">
+                <svg viewBox="0 0 24 24"><path d="M3 3H21V5H3V3M3 7H21V12H3V7M3 14H21V19H3V14M3 21H21V23H3V21Z"/></svg>
+            </div>
+            <div class="vip-badge">VIP 1</div>
+        </div>
+        <div class="details-section">
+            <div class="price">20 000 CDF</div>
+            <div class="stats-grid">
+                <div>Gain/Jour: <span>4 600 FC</span></div>
+                <div>Total: <span>207 000 FC</span></div>
+            </div>
+        </div>
+        <div class="action-section">
+            <button class="btn-buy">INVESTIR</button>
+            <small style="font-size:0.6em; margin-top:5px; opacity:0.6;">45 Jours</small>
+        </div>
+    </div>
+
+    <div class="product-card">
+        <div class="icon-section">
+            <div class="solar-icon">
+                 <svg viewBox="0 0 24 24"><path d="M3 3H21V5H3V3M3 7H21V12H3V7M3 14H21V19H3V14M3 21H21V23H3V21Z"/></svg>
+            </div>
+            <div class="vip-badge">VIP 2</div>
+        </div>
+        <div class="details-section">
+            <div class="price">40 000 CDF</div>
+            <div class="stats-grid">
+                <div>Gain/Jour: <span>9 200 FC</span></div>
+                <div>Total: <span>414 000 FC</span></div>
+            </div>
+        </div>
+        <div class="action-section">
+            <button class="btn-buy">INVESTIR</button>
+             <small style="font-size:0.6em; margin-top:5px; opacity:0.6;">45 Jours</small>
+        </div>
+    </div>
+
+    <div class="product-card">
+        <div class="icon-section">
+            <div class="solar-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2L15.5 5.5L12 9L8.5 5.5L12 2M4 12H2V7H4V12M22 7H20V12H22V7M4 20H2V15H4V20M22 15H20V20H22V15M18 12L21.5 15.5L18 19L14.5 15.5L18 12M6 12L9.5 15.5L6 19L2.5 15.5L6 12Z"/></svg>
+            </div>
+            <div class="vip-badge">VIP 3</div>
+        </div>
+        <div class="details-section">
+            <div class="price">75 000 CDF</div>
+            <div class="stats-grid">
+                <div>Gain/Jour: <span>17 250 FC</span></div>
+                <div>Total: <span>776 250 FC</span></div>
+            </div>
+        </div>
+        <div class="action-section">
+            <button class="btn-buy">INVESTIR</button>
+             <small style="font-size:0.6em; margin-top:5px; opacity:0.6;">45 Jours</small>
+        </div>
+    </div>
+
+    <div class="product-card">
+        <div class="icon-section">
+            <div class="solar-icon">
+               <svg viewBox="0 0 24 24"><path d="M12 2L15.5 5.5L12 9L8.5 5.5L12 2M4 12H2V7H4V12M22 7H20V12H22V7M4 20H2V15H4V20M22 15H20V20H22V15M18 12L21.5 15.5L18 19L14.5 15.5L18 12M6 12L9.5 15.5L6 19L2.5 15.5L6 12Z"/></svg>
+            </div>
+            <div class="vip-badge">VIP 4</div>
+        </div>
+        <div class="details-section">
+            <div class="price">120 000 CDF</div>
+            <div class="stats-grid">
+                <div>Gain/Jour: <span>27 600 FC</span></div>
+                <div>Total: <span>1 242 000FC</span></div>
+            </div>
+        </div>
+        <div class="action-section">
+            <button class="btn-buy">INVESTIR</button>
+             <small style="font-size:0.6em; margin-top:5px; opacity:0.6;">45 Jours</small>
+        </div>
+    </div>
+
+    <div class="product-card">
+        <div class="icon-section">
+            <div class="solar-icon">
+                <svg viewBox="0 0 24 24"><path d="M11 2H13V7H11V2M7 7H17V9H18.5C19.33 9 20 9.67 20 10.5V20.5C20 21.33 19.33 22 18.5 22H5.5C4.67 22 4 21.33 4 20.5V10.5C4 9.67 4.67 9 5.5 9H7V7M7 11V15H10L8.5 18L11 20V16H17V11H7Z"/></svg>
+            </div>
+            <div class="vip-badge">VIP 5</div>
+        </div>
+        <div class="details-section">
+            <div class="price">250 000 CDF</div>
+            <div class="stats-grid">
+                <div>Gain/Jour: <span>57 500 FC</span></div>
+                <div>Total: <span>2 587 500FC</span></div>
+            </div>
+        </div>
+        <div class="action-section">
+            <button class="btn-buy">INVESTIR</button>
+             <small style="font-size:0.6em; margin-top:5px; opacity:0.6;">45 Jours</small>
+        </div>
+    </div>
+
+    <div class="product-card">
+        <div class="icon-section">
+            <div class="solar-icon">
+                <svg viewBox="0 0 24 24"><path d="M11 2H13V7H11V2M7 7H17V9H18.5C19.33 9 20 9.67 20 10.5V20.5C20 21.33 19.33 22 18.5 22H5.5C4.67 22 4 21.33 4 20.5V10.5C4 9.67 4.67 9 5.5 9H7V7M7 11V15H10L8.5 18L11 20V16H17V11H7Z"/></svg>
+            </div>
+            <div class="vip-badge">VIP 6</div>
+        </div>
+        <div class="details-section">
+            <div class="price">400 000 CDF</div>
+            <div class="stats-grid">
+                <div>Gain/Jour: <span>92 000 FC</span></div>
+                <div>Total: <span>4 140 000FC</span></div>
+            </div>
+        </div>
+        <div class="action-section">
+            <button class="btn-buy">INVESTIR</button>
+             <small style="font-size:0.6em; margin-top:5px; opacity:0.6;">45 Jours</small>
+        </div>
+    </div>
+
+    <div class="product-card">
+        <div class="icon-section">
+            <div class="solar-icon">
+                <svg viewBox="0 0 24 24"><path d="M3 6H7V9H3V6M9 6H15V9H9V6M17 6H21V9H17V6M3 11H7V14H3V11M9 11H15V14H9V11M17 11H21V14H17V11M3 16H7V19H3V16M9 16H15V19H9V16M17 16H21V19H17V16M11 1L13 4H11L13 4H11V1Z"/></svg>
+            </div>
+            <div class="vip-badge">VIP 7</div>
+        </div>
+        <div class="details-section">
+            <div class="price">800 000 CDF</div>
+            <div class="stats-grid">
+                <div>Gain/Jour: <span>184 000FC</span></div>
+                <div>Total: <span>8 228 000FC</span></div>
+            </div>
+        </div>
+        <div class="action-section">
+            <button class="btn-buy">INVESTIR</button>
+             <small style="font-size:0.6em; margin-top:5px; opacity:0.6;">45 Jours</small>
+        </div>
+    </div>
+
+    <div class="product-card">
+        <div class="icon-section">
+            <div class="solar-icon">
+                <svg viewBox="0 0 24 24"><path d="M3 6H7V9H3V6M9 6H15V9H9V6M17 6H21V9H17V6M3 11H7V14H3V11M9 11H15V14H9V11M17 11H21V14H17V11M3 16H7V19H3V16M9 16H15V19H9V16M17 16H21V19H17V16M11 1L13 4H11L13 4H11V1Z"/></svg>
+            </div>
+            <div class="vip-badge">VIP 8</div>
+        </div>
+        <div class="details-section">
+            <div class="price">1 200 000CDF</div>
+            <div class="stats-grid">
+                <div>Gain/Jour: <span>276 000FC</span></div>
+                <div>Total: <span>12 420  000FC</span></div>
+            </div>
+        </div>
+        <div class="action-section">
+            <button class="btn-buy">INVESTIR</button>
+             <small style="font-size:0.6em; margin-top:5px; opacity:0.6;">45 Jours</small>
+        </div>
+    </div>
+
+</div>
+
+<nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item"><span>🏠 Accueil</span></a>
+    <a href="shop.html" class="nav-item active"><span>☀️ Produits</span></a>
+    <a href="equipe.html" class="nav-item"><span>👥 Équipe</span></a>
+    <a href="profil.html" class="nav-item"><span>👤 Profil</span></a>
+</nav>
+
+</body>
+</html>
