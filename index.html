@@ -1,153 +1,91 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>First Solar - Inscription</title>
-    <style>
-        :root {
-            --primary-color: #f39c12;
-            --dark-bg: rgba(0, 0, 0, 0.8);
-        }
+<script type="module">
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: url('IMG_2991.jpeg') no-repeat center center fixed;
-            background-size: cover;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            color: white;
-            overflow: hidden;
-        }
+// 🔥 Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            z-index: 1;
-        }
+// ⚠️ METS TES VRAIES INFOS FIREBASE ICI
+const firebaseConfig = {
+  apiKey: "VOTRE_API_KEY",
+  authDomain: "VOTRE_PROJET.firebaseapp.com",
+  projectId: "VOTRE_PROJET",
+  storageBucket: "VOTRE_PROJET.appspot.com",
+  messagingSenderId: "XXXX",
+  appId: "XXXX"
+};
 
-        .auth-container {
-            position: relative;
-            z-index: 2;
-            background: var(--dark-bg);
-            padding: 35px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
-            width: 90%;
-            max-width: 380px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-        }
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-        h1 { 
-            color: var(--primary-color); 
-            margin-bottom: 5px; 
-            font-size: 2.2em;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+// 🔥 Lire ?ref= dans l’URL
+const urlParams = new URLSearchParams(window.location.search);
+const refFromUrl = urlParams.get("ref");
 
-        .tagline {
-            font-size: 0.9em;
-            margin-bottom: 25px;
-            opacity: 0.8;
-        }
+const inputs = document.querySelectorAll("input");
+const phoneInput = inputs[0];
+const passwordInput = inputs[1];
+const referralInput = inputs[2];
 
-        .input-group { margin-bottom: 15px; text-align: left; }
+// Remplir automatiquement si lien de parrainage
+if (refFromUrl) {
+    referralInput.value = refFromUrl;
+}
 
-        label { display: block; margin-bottom: 8px; font-size: 0.85em; color: var(--primary-color); }
+// 🔥 Générer code unique
+function generateReferralCode() {
+    return "SOLAR-" + Date.now().toString().slice(-6);
+}
 
-        input {
-            width: 100%;
-            padding: 14px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        input::placeholder { color: rgba(255,255,255,0.5); }
-
-        input:focus { border-color: var(--primary-color); background: rgba(255, 255, 255, 0.15); }
-
-        .btn-submit {
-            width: 100%;
-            padding: 15px;
-            background: var(--primary-color);
-            border: none;
-            color: black;
-            font-weight: bold;
-            font-size: 1em;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 15px;
-            text-transform: uppercase;
-        }
-
-        .btn-submit:hover { 
-            background: #ffb433; 
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
-        }
-
-        .footer-link { margin-top: 20px; font-size: 0.9em; }
-
-        .footer-link a { 
-            color: var(--primary-color); 
-            text-decoration: none; 
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-
-<div class="overlay"></div>
-
-<div class="auth-container">
-    <h1>FIRST SOLAR</h1>
-    <p class="tagline">L'énergie du futur entre vos mains</p>
-    
-    <!-- On enlève action et method -->
-    <form id="registerForm">
-        <div class="input-group">
-            <label>Numéro de téléphone</label>
-            <input type="text" placeholder="Ex: 0812345678" required>
-        </div>
-        <div class="input-group">
-            <label>Mot de passe</label>
-            <input type="password" placeholder="Créer un mot de passe" required>
-        </div>
-        <div class="input-group">
-            <label>Code d'invitation</label>
-            <input type="text" placeholder="Entrez le code de votre parrain">
-        </div>
-        
-        <button type="submit" class="btn-submit">Créer mon compte</button>
-    </form>
-
-    <div class="footer-link">
-        Déjà membre ? <a href="login.html">Se connecter ici</a>
-    </div>
-</div>
-
-<script>
-document.getElementById("registerForm").addEventListener("submit", function(e) {
+document.getElementById("registerForm").addEventListener("submit", async function(e) {
     e.preventDefault();
-    window.location.href = "login.html"; 
-});
-</script>
 
-</body>
-</html>
+    const phone = phoneInput.value.trim();
+    const password = passwordInput.value.trim();
+    const referredBy = referralInput.value.trim();
+
+    if (!phone || !password) {
+        alert("Veuillez remplir tous les champs obligatoires.");
+        return;
+    }
+
+    const myCode = generateReferralCode();
+
+    // 🔥 Vérifier si le parrain existe
+    let parrainDoc = null;
+
+    if (referredBy) {
+        const q = query(collection(db, "users"), where("referralCode", "==", referredBy));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            parrainDoc = querySnapshot.docs[0];
+        } else {
+            alert("Code de parrain invalide.");
+            return;
+        }
+    }
+
+    // 🔥 Créer nouvel utilisateur
+    await addDoc(collection(db, "users"), {
+        phone: phone,
+        password: password,
+        referralCode: myCode,
+        referredBy: referredBy || null,
+        level1Count: 0,
+        commission: 0,
+        createdAt: new Date()
+    });
+
+    // 🔥 Si parrain existe → augmenter son niveau 1 + commission
+    if (parrainDoc) {
+        await updateDoc(parrainDoc.ref, {
+            level1Count: increment(1),
+            commission: increment(1000) // 💰 Commission niveau 1 (modifiable)
+        });
+    }
+
+    alert("Inscription réussie !");
+    window.location.href = "login.html";
+});
+
+</script>
