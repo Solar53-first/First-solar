@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Solar - Mes Produits</title>
+    <style>
+        :root {
+            --primary: #f39c12;
+            --dark-bg: rgba(0, 0, 0, 0.9);
+            --glass: rgba(255, 255, 255, 0.05);
+            --success: #27ae60;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: url('IMG_2991.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            color: white; padding-bottom: 90px;
+        }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); z-index: -1;
+        }
+
+        header {
+            background: var(--dark-bg); padding: 20px;
+            text-align: center; border-bottom: 2px solid var(--primary);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .back-btn {
+            color: var(--primary); text-decoration: none;
+            font-size: 1.5em; font-weight: bold;
+        }
+
+        h2 { margin: 0; font-size: 1.2em; flex-grow: 1; text-align: center; }
+
+        .container { padding: 20px; }
+
+        /* --- Design des Produits Achetés --- */
+        .product-card {
+            background: var(--dark-bg);
+            border: 1px solid var(--primary);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Lueur de fonctionnement */
+        .product-card::before {
+            content: ''; position: absolute; top: -50px; left: -50px;
+            width: 100px; height: 100px; background: var(--primary);
+            filter: blur(50px); opacity: 0.2; border-radius: 50%;
+        }
+
+        .product-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--glass); padding-bottom: 15px; margin-bottom: 15px;
+        }
+
+        .product-title { font-size: 1.2em; font-weight: bold; color: white; display: flex; align-items: center; gap: 10px; }
+        .product-icon { font-size: 1.5em; }
+
+        .status-badge {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--success);
+            padding: 5px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold;
+            border: 1px solid var(--success);
+            display: flex; align-items: center; gap: 5px;
+        }
+
+        .status-badge::before {
+            content: ''; display: inline-block; width: 8px; height: 8px;
+            background: var(--success); border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.4;} 100% {opacity: 1;} }
+
+        .product-details { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .detail-item { background: var(--glass); padding: 10px; border-radius: 8px; text-align: center; }
+        .detail-label { font-size: 0.7em; opacity: 0.7; margin-bottom: 5px; text-transform: uppercase; }
+        .detail-value { font-size: 1.1em; font-weight: bold; color: var(--primary); }
+
+        .progress-container { margin-top: 20px; }
+        .progress-label { display: flex; justify-content: space-between; font-size: 0.8em; margin-bottom: 5px; opacity: 0.8; }
+        .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.5s ease-in-out; }
+
+        /* État vide */
+        .empty-state { text-align: center; padding: 40px 20px; opacity: 0.6; display: none; }
+        .empty-state.active { display: block; }
+
+    </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<header>
+    <a href="profil.html" class="back-btn">←</a>
+    <h2>MES PANNEAUX ACTIFS</h2>
+    <div style="width: 20px;"></div> 
+</header>
+
+<div class="container">
+
+    <div id="products-list"></div>
+
+    <div class="empty-state" id="empty-message">
+        <h1 style="font-size: 3em; margin: 0;">📦</h1>
+        <p>Vous n'avez aucun panneau solaire actif pour le moment.</p>
+        <a href="shop.html" style="color: var(--primary); text-decoration: none; font-weight: bold;">Aller à la boutique ➔</a>
+    </div>
+
+</div>
+
+<script type="module">
+    // --- PLUS TARD : IMPORT FIREBASE ICI ---
+    
+    // Simuleons la vérification de la base de données
+    // Remplace "false" par "true" pour tester l'affichage des produits
+    const hasProducts = false; 
+
+    const productsList = document.getElementById('products-list');
+    const emptyMessage = document.getElementById('empty-message');
+
+    if (hasProducts) {
+        // L'utilisateur a des produits, on cache le message "vide"
+        emptyMessage.classList.remove('active');
+        
+        // On construit le produit en HTML et on l'injecte
+        // (Dans la vraie version, ces données viendront de Firebase)
+        productsList.innerHTML = `
+            <div class="product-card">
+                <div class="product-header">
+                    <div class="product-title"><span class="product-icon">☀️</span> VIP 1 - Starter</div>
+                    <div class="status-badge">En marche</div>
+                </div>
+                
+                <div class="product-details">
+                    <div class="detail-item">
+                        <div class="detail-label">Revenu Journalier</div>
+                        <div class="detail-value">400 FC</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Total Généré</div>
+                        <div class="detail-value" style="color: white;">4 800 FC</div>
+                    </div>
+                </div>
+
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Cycle de vie</span>
+                        <span>12 / 60 Jours</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 20%;"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        // L'utilisateur n'a pas de produits, on affiche le message "vide"
+        emptyMessage.classList.add('active');
+    }
+</script>
+
+</body>
+</html>
