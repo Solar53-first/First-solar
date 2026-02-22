@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Solar - Recharge Officielle</title>
+    <style>
+        :root {
+            --primary: #f39c12;
+            --dark-bg: rgba(0, 0, 0, 0.9);
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: url('IMG_2991.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            color: white; padding-bottom: 50px;
+        }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); z-index: -1;
+        }
+
+        header {
+            background: var(--dark-bg); padding: 20px;
+            text-align: center; border-bottom: 2px solid var(--primary);
+            backdrop-filter: blur(10px);
+        }
+
+        .container { padding: 15px; }
+
+        /* --- Sélecteur de Réseau avec Icônes SVG --- */
+        .network-selector {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 12px; margin-bottom: 20px;
+        }
+
+        .network-btn {
+            background: var(--glass); border: 2px solid transparent;
+            border-radius: 15px; padding: 15px 5px;
+            text-align: center; cursor: pointer; transition: 0.3s;
+            display: flex; flex-direction: column; align-items: center;
+        }
+
+        .network-btn svg { width: 35px; height: 35px; margin-bottom: 8px; }
+        .network-btn.active { border-color: var(--primary); background: rgba(243, 156, 18, 0.2); }
+
+        /* --- Affichage Numéro --- */
+        .agent-display {
+            background: #fff; color: #000; padding: 20px;
+            border-radius: 15px; text-align: center; margin-bottom: 20px;
+            display: none; animation: slideDown 0.4s ease-out;
+        }
+        .agent-number { font-size: 1.5em; font-weight: bold; color: #d35400; display: block; }
+
+        /* --- Grille des 8 VIP --- */
+        .recharge-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; margin-bottom: 20px;
+        }
+
+        .amount-option {
+            background: rgba(0,0,0,0.7); border: 1px solid var(--glass);
+            padding: 15px; border-radius: 12px; text-align: center; cursor: pointer;
+            transition: 0.2s;
+        }
+        .amount-option span { display: block; font-size: 0.7em; opacity: 0.6; margin-bottom: 2px; }
+        .amount-option.active { border-color: var(--primary); background: var(--primary); color: black; font-weight: bold; }
+
+        .form-card {
+            background: var(--dark-bg); padding: 20px; border-radius: 20px;
+            border: 1px solid var(--glass); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.85em; color: var(--primary); margin-bottom: 8px; }
+        input {
+            width: 100%; padding: 14px; border-radius: 10px; border: 1px solid var(--glass);
+            background: rgba(255,255,255,0.05); color: white; box-sizing: border-box; outline: none;
+        }
+
+        .btn-submit {
+            width: 100%; padding: 16px; background: #27ae60; color: white;
+            border: none; border-radius: 10px; font-weight: bold; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px; margin-top: 10px;
+        }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<header>
+    <h2 style="margin:0; letter-spacing: 2px;">RECHARGE</h2>
+</header>
+
+<div class="container">
+    
+    <p style="text-align:center; font-size:0.9em; margin-bottom:15px; opacity:0.8;">1. Choisissez votre mode de paiement</p>
+    
+    <div class="network-selector">
+        <div class="network-btn" onclick="selectNetwork('Airtel', '0989552339', '#ff0000')">
+            <svg viewBox="0 0 24 24" fill="#ff0000"><path d="M12,2L4.5,20.29L5.21,21L12,18L18.79,21L19.5,20.29L12,2Z"/></svg>
+            <div style="font-size:0.8em;">Airtel</div>
+        </div>
+        <div class="network-btn" onclick="selectNetwork('Orange', '0852771755', '#ff6600')">
+            <svg viewBox="0 0 24 24" fill="#ff6600"><path d="M21,3H3V21H21V3Z"/></svg>
+            <div style="font-size:0.8em;">Orange</div>
+        </div>
+        <div class="network-btn" onclick="selectNetwork('Vodacom', '0824661307', '#e60000')">
+            <svg viewBox="0 0 24 24" fill="#e60000"><path d="M12,2C6.47,2 2,6.47 2,12C2,17.53 6.47,22 12,22C17.53,22 22,17.53 22,12C22,6.47 17.53,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20Z"/></svg>
+            <div style="font-size:0.8em;">M-Pesa</div>
+        </div>
+    </div>
+
+    <div id="agentCard" class="agent-display">
+        <span id="networkName" style="font-size: 0.8em; font-weight: bold; text-transform: uppercase;"></span>
+        <span id="agentNum" class="agent-number"></span>
+        <small style="color: #666; font-style: italic;">Veuillez copier ce numéro pour le transfert</small>
+    </div>
+
+    <p style="text-align:center; font-size:0.9em; margin-bottom:15px; opacity:0.8;">2. Sélectionnez le montant du VIP</p>
+    <div class="recharge-grid">
+        <div class="amount-option" onclick="setAmount(20000)"><span>VIP 1</span>20 000 FC</div>
+        <div class="amount-option" onclick="setAmount(40000)"><span>VIP 2</span>40 000 FC</div>
+        <div class="amount-option" onclick="setAmount(75000)"><span>VIP 3</span>75 000 FC</div>
+        <div class="amount-option" onclick="setAmount(120000)"><span>VIP 4</span>120 000 FC</div>
+        <div class="amount-option" onclick="setAmount(250000)"><span>VIP 5</span>250 000 FC</div>
+        <div class="amount-option" onclick="setAmount(400000)"><span>VIP 6</span>400 000 FC</div>
+        <div class="amount-option" onclick="setAmount(800000)"><span>VIP 7</span>800 000 FC</div>
+        <div class="amount-option" onclick="setAmount(1200000)"><span>VIP 8</span>1 200 000 FC</div>
+    </div>
+
+    <div class="form-card">
+        <div class="input-group">
+            <label>ID de la Transaction (TID)</label>
+            <input type="text" id="tid" placeholder="Collez l'ID reçu par SMS ici">
+        </div>
+        <div class="input-group">
+            <label>Montant à créditer (CDF)</label>
+            <input type="text" id="finalAmount" readonly style="color: var(--primary); font-weight: bold;">
+        </div>
+        <button class="btn-submit">Soumettre la preuve</button>
+    </div>
+
+</div>
+
+<script>
+    function selectNetwork(name, number, color) {
+        const btns = document.querySelectorAll('.network-btn');
+        btns.forEach(b => b.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+
+        const card = document.getElementById('agentCard');
+        card.style.display = 'block';
+        card.style.borderLeft = "6px solid " + color;
+        document.getElementById('networkName').innerText = "Numéro Agent " + name;
+        document.getElementById('networkName').style.color = color;
+        document.getElementById('agentNum').innerText = number;
+    }
+
+    function setAmount(val) {
+        document.getElementById('finalAmount').value = val.toLocaleString() + " CDF";
+        const options = document.querySelectorAll('.amount-option');
+        options.forEach(opt => opt.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+</script>
+
+<script type="module">
+  // 1. Importer les fonctions nécessaires
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // 2. Vos clés (À récupérer sur console.firebase.google.com)
+  const firebaseConfig = {
+    apiKey: "VOTRE_API_KEY",
+    authDomain: "votre-projet.firebaseapp.com",
+    projectId: "votre-projet",
+    storageBucket: "votre-projet.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "VOTRE_APP_ID"
+  };
+
+  // 3. Initialiser la connexion
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 4. VOTRE LOGIQUE ICI (Ex: Envoyer le TID ou Valider)
+</script>
+
+</body>
+</html>
