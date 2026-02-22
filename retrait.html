@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Solar - Retrait</title>
+    <style>
+        :root {
+            --primary: #f39c12;
+            --dark-bg: rgba(0, 0, 0, 0.9);
+            --glass: rgba(255, 255, 255, 0.1);
+            --danger: #e74c3c;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: url('IMG_2991.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            color: white; padding-bottom: 90px;
+        }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75); z-index: -1;
+        }
+
+        header {
+            background: var(--dark-bg); padding: 20px;
+            text-align: center; border-bottom: 2px solid var(--primary);
+        }
+
+        .container { padding: 20px; }
+
+        .withdraw-card {
+            background: var(--dark-bg);
+            padding: 20px; border-radius: 15px;
+            border: 1px solid var(--glass);
+            backdrop-filter: blur(10px);
+        }
+
+        .info-box {
+            background: rgba(243, 156, 18, 0.1);
+            padding: 10px; border-radius: 8px;
+            font-size: 0.85em; border-left: 4px solid var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.9em; margin-bottom: 5px; color: var(--primary); }
+        
+        input {
+            width: 100%; padding: 12px; border-radius: 8px;
+            border: 1px solid var(--glass); background: rgba(255,255,255,0.05);
+            color: white; box-sizing: border-box; font-size: 1.1em;
+        }
+
+        .calc-box {
+            margin: 15px 0; font-size: 0.9em;
+            background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px;
+        }
+
+        .btn-withdraw {
+            width: 100%; padding: 15px; background: var(--primary);
+            border: none; border-radius: 8px; font-weight: bold;
+            cursor: pointer; font-size: 1em; text-transform: uppercase;
+        }
+
+        .btn-withdraw:disabled {
+            background: #555; cursor: not-allowed;
+        }
+
+        /* --- Bottom Nav --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #111; display: flex; justify-content: space-around;
+            padding: 15px 0; border-top: 1px solid var(--glass);
+        }
+        .nav-item { color: #666; text-decoration: none; font-size: 0.8em; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<header>
+    <h2 style="margin:0;">RETRAIT DE FONDS</h2>
+</header>
+
+<div class="container">
+    
+    <div class="withdraw-card">
+        <div class="info-box">
+            • Minimum : <b>6 000 CDF</b><br>
+            • Frais : <b>15%</b><br>
+            • Heures : <b>11:00 - 16:00</b> chaque jour.
+        </div>
+
+        <div class="input-group">
+            <label>Montant à retirer (CDF)</label>
+            <input type="number" id="amount" placeholder="Minimum 6000" oninput="calculate()">
+        </div>
+
+        <div class="calc-box">
+            <div style="display:flex; justify-content: space-between;">
+                <span>Frais de service (15%) :</span>
+                <span id="fees">0 CDF</span>
+            </div>
+            <div style="display:flex; justify-content: space-between; margin-top:5px; font-weight:bold; color:var(--primary);">
+                <span>Vous recevrez :</span>
+                <span id="final">0 CDF</span>
+            </div>
+        </div>
+
+        <p id="time-msg" style="font-size:0.75em; color:var(--danger); text-align:center; margin-bottom:15px;">
+            Vérification de l'heure en cours...
+        </p>
+
+        <button class="btn-withdraw" id="btnWithdraw" disabled>DEMANDER LE RETRAIT</button>
+    </div>
+
+</div>
+
+<script>
+    function calculate() {
+        const amount = document.getElementById('amount').value;
+        const fees = amount * 0.15;
+        const final = amount - fees;
+
+        if(amount >= 6000) {
+            document.getElementById('fees').innerText = fees.toLocaleString() + " CDF";
+            document.getElementById('final').innerText = final.toLocaleString() + " CDF";
+        } else {
+            document.getElementById('fees').innerText = "0 CDF";
+            document.getElementById('final').innerText = "0 CDF";
+        }
+        checkRequirements();
+    }
+
+    function checkRequirements() {
+        const amount = document.getElementById('amount').value;
+        const btn = document.getElementById('btnWithdraw');
+        const now = new Date();
+        const hour = now.getHours();
+        
+        // Vérification heure (11h à 16h)
+        const isCorrectTime = (hour >= 11 && hour < 16);
+        
+        if (amount >= 6000 && isCorrectTime) {
+            btn.disabled = false;
+            document.getElementById('time-msg').style.color = "#27ae60";
+            document.getElementById('time-msg').innerText = "Le service de retrait est actuellement ouvert.";
+        } else if (!isCorrectTime) {
+            btn.disabled = true;
+            document.getElementById('time-msg').innerText = "Retraits fermés. Revenez entre 11h et 16h.";
+        } else {
+            btn.disabled = true;
+        }
+    }
+    
+    // Lancer au chargement
+    checkRequirements();
+</script>
+
+<script type="module">
+  // 1. Importer les fonctions nécessaires
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // 2. Vos clés (À récupérer sur console.firebase.google.com)
+  const firebaseConfig = {
+    apiKey: "VOTRE_API_KEY",
+    authDomain: "votre-projet.firebaseapp.com",
+    projectId: "votre-projet",
+    storageBucket: "votre-projet.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "VOTRE_APP_ID"
+  };
+
+  // 3. Initialiser la connexion
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // 4. VOTRE LOGIQUE ICI (Ex: Envoyer le TID ou Valider)
+</script>
+
+</body>
+</html>
