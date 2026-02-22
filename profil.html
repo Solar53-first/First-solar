@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Solar - Mon Profil</title>
+    <style>
+        :root {
+            --primary: #f39c12;
+            --dark-bg: rgba(0, 0, 0, 0.85);
+            --glass: rgba(255, 255, 255, 0.1);
+            --danger: #e74c3c;
+            --telegram: #0088cc;
+            --success: #27ae60;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: url('IMG_2991.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            color: white; padding-bottom: 90px;
+        }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75); z-index: -1;
+        }
+
+        header {
+            background: var(--dark-bg); padding: 30px 20px;
+            text-align: center; border-bottom: 2px solid var(--primary);
+        }
+
+        .user-avatar {
+            width: 80px; height: 80px;
+            background: var(--primary);
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2em; color: black; font-weight: bold;
+        }
+
+        .container { padding: 15px; }
+
+        .card {
+            background: var(--dark-bg);
+            border-radius: 15px; padding: 20px;
+            margin-bottom: 20px; border: 1px solid var(--glass);
+        }
+
+        /* Stats Rapides Panneaux */
+        .panel-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: rgba(243, 156, 18, 0.1);
+            border: 1px solid var(--primary);
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value { font-size: 1.2em; font-weight: bold; color: var(--primary); }
+        .stat-label { font-size: 0.7em; opacity: 0.8; text-transform: uppercase; }
+
+        h3 { color: var(--primary); margin-top: 0; font-size: 1.1em; border-bottom: 1px solid var(--glass); padding-bottom: 10px; }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.8em; opacity: 0.7; margin-bottom: 5px; }
+        input {
+            width: 100%; padding: 12px; border-radius: 8px;
+            border: 1px solid var(--glass); background: rgba(255,255,255,0.05);
+            color: white; box-sizing: border-box;
+        }
+
+        .btn-save {
+            width: 100%; padding: 12px; background: var(--primary);
+            border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
+        }
+
+        .profile-menu { display: flex; flex-direction: column; gap: 10px; }
+
+        .menu-link {
+            background: var(--glass); padding: 15px;
+            border-radius: 10px; text-decoration: none; color: white;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: 0.3s;
+        }
+
+        .menu-link:hover { background: rgba(255,255,255,0.2); }
+
+        .telegram-link { background: var(--telegram); margin-top: 10px; font-weight: bold; }
+        .btn-logout { margin-top: 20px; text-align: center; color: var(--danger); font-weight: bold; text-decoration: none; display: block; }
+
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #111; display: flex; justify-content: space-around;
+            padding: 15px 0; border-top: 1px solid var(--glass);
+        }
+        .nav-item { color: #666; text-decoration: none; font-size: 0.8em; text-align: center; }
+        .nav-item.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<header>
+    <div class="user-avatar" id="avatar-initial">U</div>
+    <h2 style="margin:0;" id="user-name">Utilisateur Solar</h2>
+    <p style="margin:5px 0; opacity:0.6; font-size:0.9em;" id="user-info">ID: Chargement... | +243 --- --- ---</p>
+</header>
+
+<div class="container">
+    
+    <div class="panel-stats">
+        <div class="stat-item">
+            <div class="stat-value" id="active-panels">0</div>
+            <div class="stat-label">Panneaux Actifs</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="daily-income">0 FC</div>
+            <div class="stat-label">Revenu / Jour</div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3>COORDONNÉES DE RETRAIT</h3>
+        <form id="payment-form">
+            <div class="input-group">
+                <label>Nom du titulaire</label>
+                <input type="text" id="holder-name" placeholder="Ex: Jean Mukendi">
+            </div>
+            <div class="input-group">
+                <label>Numéro de téléphone / Compte</label>
+                <input type="text" id="account-number" placeholder="Ex: 082 000 000">
+            </div>
+            <button type="button" class="btn-save" onclick="savePaymentInfo()">ENREGISTRER LES INFOS</button>
+        </form>
+    </div>
+
+    <div class="profile-menu">
+        <a href="mes_produits.html" class="menu-link" style="border: 1px solid var(--primary);">
+            <span>📦 Mes panneaux actifs</span>
+            <span style="background: var(--primary); color: black; padding: 2px 8px; border-radius: 5px; font-size: 0.8em; font-weight: bold;">VOIR</span>
+        </a>
+
+        <a href="historique.html" class="menu-link">
+            <span>📜 Historique des Transactions</span>
+            <span>➔</span>
+        </a>
+
+        <a href="https://t.me/+MBfNMLx3ZIwxOThk" target="_blank" class="menu-link telegram-link">
+            <span>✈️ Rejoindre le Groupe Telegram</span>
+            <span>➔</span>
+        </a>
+    </div>
+
+    <a href="index.html" class="btn-logout">Déconnexion du compte</a>
+
+</div>
+
+<nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item"><span>🏠 Accueil</span></a>
+    <a href="shop.html" class="nav-item"><span>☀️ Produits</span></a>
+    <a href="equipe.html" class="nav-item"><span>👥 Équipe</span></a>
+    <a href="profil.html" class="nav-item active"><span>👤 Profil</span></a>
+</nav>
+
+<script type="module">
+    // Ici, vous ajouterez votre config Firebase
+    // Pour l'instant, c'est prêt à recevoir les fonctions d'enregistrement
+    window.savePaymentInfo = () => {
+        const name = document.getElementById('holder-name').value;
+        const num = document.getElementById('account-number').value;
+        if(name && num) {
+            alert("Informations de retrait enregistrées avec succès !");
+            // Logique Firebase updateDoc ici
+        } else {
+            alert("Veuillez remplir les deux champs.");
+        }
+    }
+</script>
+
+</body>
+</html>
