@@ -45,11 +45,8 @@
         }
 
         h1 { color: var(--primary-color); margin-bottom: 10px; font-size: 2em; text-transform: uppercase; }
-        
         .tagline { font-size: 0.9em; margin-bottom: 30px; opacity: 0.8; }
-
         .input-group { margin-bottom: 20px; text-align: left; }
-
         label { display: block; margin-bottom: 8px; font-size: 0.85em; color: var(--primary-color); }
 
         input {
@@ -77,7 +74,6 @@
         }
 
         .btn-login:hover { background: #ffb433; transform: scale(1.02); }
-
         .footer-link { margin-top: 25px; font-size: 0.9em; }
         .footer-link a { color: var(--primary-color); text-decoration: none; font-weight: bold; }
     </style>
@@ -90,7 +86,8 @@
     <h1>FIRST SOLAR</h1>
     <p class="tagline">Connectez-vous à votre espace solaire</p>
     
-    <form action="dashboard.html" method="POST">
+    <!-- ON AJOUTE SEULEMENT id="loginForm" -->
+    <form id="loginForm">
         <div class="input-group">
             <label>Numéro de téléphone</label>
             <input type="text" placeholder="Votre numéro" required>
@@ -108,26 +105,12 @@
     </div>
 </div>
 
-<script type="module">
-  // 1. Importer les fonctions nécessaires
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-  // 2. Vos clés (À récupérer sur console.firebase.google.com)
-  const firebaseConfig = {
-    apiKey: "VOTRE_API_KEY",
-    authDomain: "votre-projet.firebaseapp.com",
-    projectId: "votre-projet",
-    storageBucket: "votre-projet.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "VOTRE_APP_ID"
-  };
-
-  // 3. Initialiser la connexion
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // 4. VOTRE LOGIQUE ICI (Ex: Envoyer le TID ou Valider)
+<!-- SCRIPT SIMPLE POUR REDIRECTION -->
+<script>
+document.getElementById("loginForm").addEventListener("submit", function(e) {
+    e.preventDefault(); 
+    window.location.href = "dashboard.html";
+});
 </script>
 
 </body>
