@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Solar - Mon Équipe</title>
+    <style>
+        :root {
+            --primary: #f39c12;
+            --dark-bg: rgba(0, 0, 0, 0.85);
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: url('IMG_2991.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            padding-bottom: 90px;
+        }
+
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); z-index: -1;
+        }
+
+        header {
+            background: var(--dark-bg);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            backdrop-filter: blur(10px);
+        }
+
+        .container { padding: 15px; }
+
+        /* --- Section Code de Parrainage --- */
+        .referral-box {
+            background: var(--glass);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border: 1px dashed var(--primary);
+            margin-bottom: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .referral-code {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+            letter-spacing: 2px;
+        }
+
+        .btn-copy {
+            background: var(--primary);
+            color: black;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* --- Statistiques Équipe --- */
+        .team-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(0,0,0,0.6);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-card span { display: block; font-size: 0.8em; opacity: 0.7; }
+        .stat-card strong { font-size: 1.2em; color: var(--primary); }
+
+        /* --- Liste des Niveaux --- */
+        .level-row {
+            background: var(--dark-bg);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--glass);
+        }
+
+        .level-info h4 { margin: 0; color: var(--primary); }
+        .level-info p { margin: 5px 0 0; font-size: 0.8em; opacity: 0.6; }
+
+        .level-commission {
+            text-align: right;
+        }
+
+        .percent-badge {
+            background: #27ae60;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        /* --- Bottom Nav --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #111; display: flex; justify-content: space-around;
+            padding: 15px 0; border-top: 1px solid var(--glass);
+        }
+        .nav-item { color: #666; text-decoration: none; font-size: 0.8em; text-align: center; }
+        .nav-item.active { color: var(--primary); }
+    </style>
+</head>
+<body>
+
+<div class="overlay"></div>
+
+<header>
+    <h2 style="margin:0;">MON ÉQUIPE</h2>
+</header>
+
+<div class="container">
+    
+    <div class="referral-box">
+        <span>Mon Code d'Invitation</span>
+        <div class="referral-code">SOLAR-8821</div>
+        <button class="btn-copy">Copier le lien</button>
+    </div>
+
+    <div class="team-stats">
+        <div class="stat-card">
+            <span>Membres totaux</span>
+            <strong>0</strong>
+        </div>
+        <div class="stat-card">
+            <span>Gains équipe</span>
+            <strong>0 CDF</strong>
+        </div>
+    </div>
+
+    <h3 style="font-size: 1em; margin-bottom: 15px; border-left: 3px solid var(--primary); padding-left: 10px;">Répartition des Commissions</h3>
+
+    <div class="level-row">
+        <div class="level-info">
+            <h4>Niveau 1</h4>
+            <p>Membres directs : 0</p>
+        </div>
+        <div class="level-commission">
+            <span class="percent-badge">25%</span>
+            <div style="font-size: 0.9em; margin-top:5px;">0 CDF</div>
+        </div>
+    </div>
+
+    <div class="level-row">
+        <div class="level-info">
+            <h4>Niveau 2</h4>
+            <p>Filleuls de N1 : 0</p>
+        </div>
+        <div class="level-commission">
+            <span class="percent-badge">3%</span>
+            <div style="font-size: 0.9em; margin-top:5px;">0 CDF</div>
+        </div>
+    </div>
+
+    <div class="level-row">
+        <div class="level-info">
+            <h4>Niveau 3</h4>
+            <p>Filleuls de N2 : 0</p>
+        </div>
+        <div class="level-commission">
+            <span class="percent-badge">1%</span>
+            <div style="font-size: 0.9em; margin-top:5px;">0 CDF</div>
+        </div>
+    </div>
+
+</div>
+
+<nav class="bottom-nav">
+    <a href="dashboard.html" class="nav-item"><span>🏠 Accueil</span></a>
+    <a href="shop.html" class="nav-item"><span>☀️ Produits</span></a>
+    <a href="equipe.html" class="nav-item active"><span>👥 Équipe</span></a>
+    <a href="profil.html" class="nav-item"><span>👤 Profil</span></a>
+</nav>
+
+</body>
+</html>
