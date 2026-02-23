@@ -16,9 +16,14 @@
         .stat-card h4 { margin: 0; font-size: 0.8em; opacity: 0.7; }
         .stat-card p { margin: 5px 0 0; font-size: 1.2em; font-weight: bold; color: var(--primary); }
 
+        /* Section Parrainage */
+        .invite-box { background: var(--dark-card); padding: 20px; border-radius: 15px; border: 1px solid var(--primary); margin-bottom: 20px; text-align: center; }
+        .code-display { font-size: 1.5em; font-weight: bold; color: var(--primary); margin: 10px 0; letter-spacing: 2px; }
+        .btn-copy { background: var(--primary); color: black; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 5px; }
+
         /* Onglets Niveaux */
         .tabs { display: flex; justify-content: space-around; background: var(--dark-card); border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--glass); }
-        .tab { padding: 12px; cursor: pointer; font-size: 0.9em; opacity: 0.6; transition: 0.3s; }
+        .tab { padding: 12px; cursor: pointer; font-size: 0.9em; opacity: 0.6; transition: 0.3s; flex: 1; text-align: center; }
         .tab.active { opacity: 1; color: var(--primary); border-bottom: 2px solid var(--primary); }
 
         /* Liste des membres */
@@ -39,21 +44,27 @@
 <div class="container">
     <h2 style="color: var(--primary);">Mon Réseau Solaire</h2>
     
+    <div class="invite-box">
+        <p style="margin:0; font-size: 0.9em;">Votre Code d'Invitation</p>
+        <div class="code-display" id="myCodeDisplay">...</div>
+        <button class="btn-copy" onclick="copyInviteLink()">Copier le Lien de Parrainage</button>
+    </div>
+
     <div class="stats-grid">
         <div class="stat-card">
             <h4>Taille Équipe</h4>
             <p id="totalTeam">0</p>
         </div>
         <div class="stat-card">
-            <h4>Gains Totaux</h4>
+            <h4>Commissions</h4>
             <p id="totalGains">0 CDF</p>
         </div>
     </div>
 
     <div class="tabs">
-        <div class="tab active" onclick="switchLevel(1)">Niveau 1</div>
-        <div class="tab" onclick="switchLevel(2)">Niveau 2</div>
-        <div class="tab" onclick="switchLevel(3)">Niveau 3</div>
+        <div class="tab active" id="tab1" onclick="switchLevel(1)">Niv 1 (0)</div>
+        <div class="tab" id="tab2" onclick="switchLevel(2)">Niv 2 (0)</div>
+        <div class="tab" id="tab3" onclick="switchLevel(3)">Niv 3 (0)</div>
     </div>
 
     <div class="member-list" id="memberContainer">
@@ -70,51 +81,77 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "VOTRE_API_KEY",
-        authDomain: "votre-projet.firebaseapp.com",
-        projectId: "votre-projet",
-        storageBucket: "votre-projet.appspot.com",
-        messagingSenderId: "123456789",
+        databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com",
+        projectId: "firstsolar-e2ba3",
         appId: "VOTRE_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
+    const db = getDatabase(app);
     const userPhone = localStorage.getItem('userPhone');
-    if (!userPhone) window.location.href = "index.html";
+
+    if (!userPhone) window.location.href = "login.html";
 
     let network = { lv1: [], lv2: [], lv3: [] };
+    let myInviteCode = "";
 
     async function loadNetwork() {
-        // Obtenir son propre code d'invitation d'abord
-        const usersRef = collection(db, "users");
-        
-        // NIVEAU 1 : Chercher ceux dont le parrain est MON code
-        // Note: On suppose que 'mon_code_invitation' est stocké dans le profil
-        const q1 = query(usersRef, where("parrain_direct", "==", "SOLAR-" + userPhone.slice(-6)));
-        const snap1 = await getDocs(q1);
-        snap1.forEach(doc => network.lv1.push(doc.data()));
+        try {
+            // 1. Récupérer MON code d'invitation
+            const selfRef = ref(db, 'users/' + userPhone);
+            const selfSnap = await get(selfRef);
+            if (!selfSnap.exists()) return;
+            
+            const userData = selfSnap.val();
+            myInviteCode = userData.mon_code_invitation;
+            document.getElementById('myCodeDisplay').innerText = myInviteCode;
+            document.getElementById('totalGains').innerText = (userData.commissions || 0).toLocaleString() + " CDF";
 
-        // NIVEAU 2 : Pour chaque membre du LV1, chercher leurs filleuls
-        for(let f1 of network.lv1) {
-            const q2 = query(usersRef, where("parrain_direct", "==", f1.mon_code_invitation));
-            const snap2 = await getDocs(q2);
-            snap2.forEach(doc => network.lv2.push(doc.data()));
+            const allUsersRef = ref(db, 'users');
+            const allSnap = await get(allUsersRef);
+            const allUsers = allSnap.val();
+
+            // 2. Calculer les Niveaux
+            // Niveau 1
+            for (let id in allUsers) {
+                if (allUsers[id].parrain_direct === myInviteCode) {
+                    network.lv1.push(allUsers[id]);
+                }
+            }
+
+            // Niveau 2
+            network.lv1.forEach(f1 => {
+                for (let id in allUsers) {
+                    if (allUsers[id].parrain_direct === f1.mon_code_invitation) {
+                        network.lv2.push(allUsers[id]);
+                    }
+                }
+            });
+
+            // Niveau 3
+            network.lv2.forEach(f2 => {
+                for (let id in allUsers) {
+                    if (allUsers[id].parrain_direct === f2.mon_code_invitation) {
+                        network.lv3.push(allUsers[id]);
+                    }
+                }
+            });
+
+            // Mise à jour des compteurs
+            document.getElementById('tab1').innerText = `Niv 1 (${network.lv1.length})`;
+            document.getElementById('tab2').innerText = `Niv 2 (${network.lv2.length})`;
+            document.getElementById('tab3').innerText = `Niv 3 (${network.lv3.length})`;
+            document.getElementById('totalTeam').innerText = network.lv1.length + network.lv2.length + network.lv3.length;
+
+            updateUI(1);
+
+        } catch (error) {
+            console.error(error);
         }
-
-        // NIVEAU 3 : Pour chaque membre du LV2, chercher leurs filleuls
-        for(let f2 of network.lv2) {
-            const q3 = query(usersRef, where("parrain_direct", "==", f2.mon_code_invitation));
-            const snap3 = await getDocs(q3);
-            snap3.forEach(doc => network.lv3.push(doc.data()));
-        }
-
-        updateUI(1);
-        document.getElementById('totalTeam').innerText = network.lv1.length + network.lv2.length + network.lv3.length;
     }
 
     window.switchLevel = (lvl) => {
@@ -135,14 +172,22 @@
         }
 
         list.forEach(m => {
+            const date = m.date_inscription ? new Date(m.date_inscription).toLocaleDateString() : "---";
             container.innerHTML += `
                 <div class="member-item">
-                    <span>📱 ${m.telephone.substring(0,7)}****</span>
-                    <span style="color:#27ae60;">Inscrit le ${new Date(m.date_inscription).toLocaleDateString()}</span>
+                    <span>📱 ${m.telephone.substring(0,7)}***</span>
+                    <span style="color:#27ae60;">${date}</span>
                 </div>
             `;
         });
     }
+
+    window.copyInviteLink = () => {
+        const link = window.location.origin + "/index.html?ref=" + myInviteCode;
+        navigator.clipboard.writeText(link).then(() => {
+            alert("Lien de parrainage copié !");
+        });
+    };
 
     loadNetwork();
 </script>
