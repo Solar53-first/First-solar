@@ -105,21 +105,20 @@
 </div>
 
 <script type="module">
+    // 1. IMPORTATION POUR REALTIME DATABASE
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // REMPLACE CES INFOS PAR TES CLÉS FIREBASE
+    // 2. CONFIGURATION (Prends bien ton databaseURL de l'Image 4)
     const firebaseConfig = {
         apiKey: "VOTRE_API_KEY",
-        authDomain: "votre-projet.firebaseapp.com",
-        projectId: "votre-projet",
-        storageBucket: "votre-projet.appspot.com",
-        messagingSenderId: "123456789",
+        databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com",
+        projectId: "firstsolar-e2ba3",
         appId: "VOTRE_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db = getDatabase(app);
 
     document.getElementById("loginForm").addEventListener("submit", async function(e) {
         e.preventDefault();
@@ -127,39 +126,30 @@
         const phone = document.getElementById('phone').value.trim();
         const password = document.getElementById('password').value.trim();
 
-        // 1. VÉRIFICATION DU FORMAT RDC
-        if (!phone.startsWith("+243") || phone.length !== 13) {
-            alert("Erreur : Utilisez le format +243 suivi de 9 chiffres.");
-            return;
-        }
-
-        // 2. VÉRIFICATION DU FORMAT MOT DE PASSE
-        if (!/^\d{6}$/.test(password)) {
-            alert("Erreur : Le mot de passe doit être composé de 6 chiffres.");
-            return;
-        }
+        // Nettoyage du numéro pour correspondre à la base (ex: 243975617195)
+        const cleanPhone = phone.replace(/\D/g, '');
 
         try {
-            const userRef = doc(db, "users", phone);
-            const userSnap = await getDoc(userRef);
+            // 3. RECHERCHE DANS REALTIME DATABASE
+            const userRef = ref(db, 'users/' + cleanPhone);
+            const snapshot = await get(userRef);
 
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
                 
-                // 3. COMPARAISON DU MOT DE PASSE
+                // Vérification du mot de passe
                 if (userData.motDePasse === password) {
-                    localStorage.setItem('userPhone', phone);
-                    window.location.href = "dashboard.html"; // Direction Tableau de bord
+                    localStorage.setItem('userPhone', cleanPhone);
+                    window.location.href = "dashboard.html";
                 } else {
                     alert("Mot de passe incorrect.");
                 }
             } else {
-                alert("Ce compte n'existe pas. Veuillez d'abord vous inscrire.");
-                window.location.href = "index.html";
+                alert("Ce compte n'existe pas ou numéro mal saisi.");
             }
         } catch (error) {
             console.error(error);
-            alert("Erreur de connexion au serveur.");
+            alert("Erreur de connexion : " + error.message);
         }
     });
 </script>
