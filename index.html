@@ -26,10 +26,7 @@
 
         .overlay {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.6);
             z-index: 1;
         }
@@ -56,14 +53,8 @@
             text-transform: uppercase;
         }
 
-        .tagline {
-            font-size: 0.9em;
-            margin-bottom: 25px;
-            opacity: 0.8;
-        }
-
+        .tagline { font-size: 0.9em; margin-bottom: 25px; opacity: 0.8; }
         .input-group { margin-bottom: 15px; text-align: left; }
-
         label { display: block; margin-bottom: 8px; font-size: 0.85em; color: var(--primary-color); }
 
         input {
@@ -76,10 +67,6 @@
             box-sizing: border-box;
             outline: none;
         }
-
-        input::placeholder { color: rgba(255,255,255,0.5); }
-
-        input:focus { border-color: var(--primary-color); background: rgba(255, 255, 255, 0.15); }
 
         .btn-submit {
             width: 100%;
@@ -103,12 +90,7 @@
         }
 
         .footer-link { margin-top: 20px; font-size: 0.9em; }
-
-        .footer-link a { 
-            color: var(--primary-color); 
-            text-decoration: none; 
-            font-weight: bold;
-        }
+        .footer-link a { color: var(--primary-color); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -126,11 +108,11 @@
         </div>
         <div class="input-group">
             <label>Mot de passe</label>
-            <input type="password" id="password" placeholder="6 chiffres exactement" maxlength="6" required>
+            <input type="password" id="password" placeholder="6 chiffres" maxlength="6" required>
         </div>
         <div class="input-group">
             <label>Code d'invitation</label>
-            <input type="text" id="inviteCode" placeholder="Entrez le code de votre parrain">
+            <input type="text" id="inviteCode" placeholder="Code parrain">
         </div>
         
         <button type="submit" class="btn-submit">Créer mon compte</button>
@@ -142,83 +124,69 @@
 </div>
 
 <script type="module">
+    // 1. IMPORTATION REALTIME DATABASE
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // REMPLACE CES INFOS PAR TES CLÉS FIREBASE REELLES
+    // 2. TA CONFIGURATION
     const firebaseConfig = {
         apiKey: "VOTRE_API_KEY",
-        authDomain: "votre-projet.firebaseapp.com",
-        projectId: "votre-projet",
-        storageBucket: "votre-projet.appspot.com",
-        messagingSenderId: "123456789",
+        databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com",
+        projectId: "firstsolar-e2ba3",
         appId: "VOTRE_APP_ID"
     };
 
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // Remplissage automatique du code si présent dans l'URL (?ref=SOLAR-XXXX)
-    const urlParams = new URLSearchParams(window.location.search);
-    const refFromUrl = urlParams.get('ref');
-    if(refFromUrl) {
-        document.getElementById('inviteCode').value = refFromUrl;
-    }
+    const db = getDatabase(app);
 
     document.getElementById("registerForm").addEventListener("submit", async function(e) {
         e.preventDefault();
         
         const phone = document.getElementById('phone').value.trim();
         const password = document.getElementById('password').value.trim();
-        const inviteCode = document.getElementById('inviteCode').value.trim();
+        const inviteCode = document.getElementById('inviteCode').value.trim() || "SYSTEM";
 
-        // 1. VERIFICATION NUMERO RDC (+243)
+        const cleanPhone = phone.replace(/\D/g, ''); // Garde uniquement les chiffres
+
+        // Validations locales
         if (!phone.startsWith("+243") || phone.length !== 13) {
-            alert("Erreur : Le numéro doit commencer par +243 et avoir 9 chiffres après (Ex: +243812345678).");
-            return;
-        }
-
-        // 2. VERIFICATION MOT DE PASSE (6 CHIFFRES)
-        if (!/^\d{6}$/.test(password)) {
-            alert("Erreur : Le mot de passe doit contenir exactement 6 chiffres.");
+            alert("Format requis: +243 suivi de 9 chiffres.");
             return;
         }
 
         try {
-            // 3. VERIFIER SI L'UTILISATEUR EXISTE DEJA
-            const userRef = doc(db, "users", phone);
-            const userSnap = await getDoc(userRef);
+            // 3. VERIFIER SI LE NUMERO EXISTE DEJA
+            const userRef = ref(db, 'users/' + cleanPhone);
+            const snapshot = await get(userRef);
 
-            if (userSnap.exists()) {
-                alert("Ce numéro est déjà inscrit. Connectez-vous.");
+            if (snapshot.exists()) {
+                alert("Ce numéro est déjà inscrit.");
                 window.location.href = "login.html";
                 return;
             }
 
-            // 4. GENERATION DU CODE D'INVITATION UNIQUE
-            const monCodeUnique = "SOLAR-" + phone.slice(-6);
+            // 4. CREATION DU COMPTE
+            const monCodeUnique = "SOLAR-" + cleanPhone.slice(-5);
 
-            // 5. ENREGISTREMENT DU NOUVEL UTILISATEUR
-            await setDoc(userRef, {
+            await set(userRef, {
                 telephone: phone,
                 motDePasse: password,
                 mon_code_invitation: monCodeUnique,
-                parrain_direct: inviteCode || "SYSTEM",
+                parrain_direct: inviteCode,
                 solde: 0,
                 commissions_totale: 0,
                 date_inscription: new Date().toISOString()
             });
 
-            alert("Compte créé avec succès ! Bienvenue chez First Solar.");
-            localStorage.setItem('userPhone', phone);
+            alert("Inscription réussie !");
+            localStorage.setItem('userPhone', cleanPhone);
             window.location.href = "login.html";
 
         } catch (error) {
             console.error(error);
-            alert("Une erreur est survenue lors de l'inscription.");
+            alert("Erreur serveur : " + error.message);
         }
     });
 </script>
-
 </body>
 </html>
