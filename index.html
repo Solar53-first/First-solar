@@ -5,40 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>First Solar - Inscription</title>
     <style>
-        :root { --primary-color: #f39c12; --dark-bg: rgba(0, 0, 0, 0.8); }
+        :root { --primary: #f39c12; --bg: rgba(0, 0, 0, 0.8); }
         body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: url('IMG_2991.jpeg') no-repeat center center fixed; background-size: cover; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: white; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1; }
-        .auth-container { position: relative; z-index: 2; background: var(--dark-bg); padding: 30px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); }
-        h1 { color: var(--primary-color); margin-bottom: 5px; text-transform: uppercase; }
+        .auth-container { position: relative; z-index: 2; background: var(--bg); padding: 30px; border-radius: 20px; width: 90%; max-width: 360px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); }
+        h1 { color: var(--primary); margin: 0 0 10px; text-transform: uppercase; font-size: 1.8em; }
         .input-group { margin-bottom: 15px; text-align: left; }
-        label { display: block; margin-bottom: 5px; font-size: 0.85em; color: var(--primary-color); }
+        label { display: block; margin-bottom: 5px; font-size: 0.8em; color: var(--primary); }
         input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255, 255, 255, 0.1); color: white; box-sizing: border-box; outline: none; }
-        .btn-submit { width: 100%; padding: 15px; background: var(--primary-color); border: none; color: black; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 100%; }
+        .btn-submit { width: 100%; padding: 15px; background: var(--primary); border: none; color: black; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
         .footer-link { margin-top: 20px; font-size: 0.9em; }
-        .footer-link a { color: var(--primary-color); text-decoration: none; }
+        .footer-link a { color: var(--primary); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 <div class="overlay"></div>
 <div class="auth-container">
     <h1>FIRST SOLAR</h1>
-    <p>Créer un compte</p>
+    <p style="margin-bottom: 20px;">Inscription Partenaire</p>
     <form id="registerForm">
         <div class="input-group">
-            <label>Téléphone (+243...)</label>
+            <label>Numéro de téléphone</label>
             <input type="text" id="phone" placeholder="+243XXXXXXXXX" required>
         </div>
         <div class="input-group">
-            <label>Mot de passe</label>
-            <input type="password" id="password" maxlength="6" required>
+            <label>Mot de passe (6 chiffres)</label>
+            <input type="password" id="password" maxlength="6" placeholder="******" required>
         </div>
         <div class="input-group">
-            <label>Code Parrain</label>
-            <input type="text" id="inviteCode">
+            <label>Code d'invitation</label>
+            <input type="text" id="inviteCode" placeholder="Code parrain">
         </div>
-        <button type="submit" class="btn-submit" id="submitBtn">S'INSCRIRE</button>
+        <button type="submit" class="btn-submit" id="subBtn">Créer mon compte</button>
     </form>
-    <div class="footer-link">Déjà inscrit ? <a href="login.html">Connexion</a></div>
+    <div class="footer-link">Déjà inscrit ? <a href="login.html">Se connecter</a></div>
 </div>
 
 <script type="module">
@@ -55,7 +55,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Détection du parrain
+    // Auto-détection du parrain
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
     if (refCode) {
@@ -65,31 +65,31 @@
 
     document.getElementById("registerForm").onsubmit = async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('submitBtn');
+        const btn = document.getElementById('subBtn');
         btn.disabled = true;
-        btn.innerText = "Chargement...";
+        btn.innerText = "Traitement...";
 
-        const phone = document.getElementById('phone').value.trim().replace(/\+/g, '').replace(/\s/g, '');
-        const password = document.getElementById('password').value;
-        const invite = document.getElementById('inviteCode').value || "SYSTEM";
+        const tel = document.getElementById('phone').value.trim().replace(/\+/g, '').replace(/\s/g, '');
+        const pass = document.getElementById('password').value;
+        const codeP = document.getElementById('inviteCode').value || "SYSTEM";
 
         try {
-            const userRef = ref(db, 'users/' + phone);
+            const userRef = ref(db, 'users/' + tel);
             const snap = await get(userRef);
 
             if (snap.exists()) {
-                alert("Numéro déjà utilisé.");
+                alert("Ce numéro est déjà enregistré.");
                 btn.disabled = false;
-                btn.innerText = "S'INSCRIRE";
+                btn.innerText = "Créer mon compte";
                 return;
             }
 
-            const monCode = "SOLAR-" + phone.slice(-5);
+            const monCode = "SOLAR-" + tel.slice(-5);
             await set(userRef, {
-                telephone: phone,
-                motDePasse: password,
+                telephone: tel,
+                motDePasse: pass,
                 mon_code_invitation: monCode,
-                parrain_direct: invite,
+                parrain_direct: codeP,
                 solde: 0,
                 commissions: 0,
                 gain_quotidien_actif: 0,
@@ -97,11 +97,12 @@
                 last_income_timestamp: 0
             });
 
-            alert("Bienvenue ! Votre code : " + monCode);
+            alert("Bienvenue chez First Solar ! Votre code : " + monCode);
             window.location.href = "login.html";
         } catch (err) {
-            alert("Erreur : " + err.message);
+            alert("Erreur réseau. Vérifiez votre connexion.");
             btn.disabled = false;
+            btn.innerText = "Créer mon compte";
         }
     };
 </script>
