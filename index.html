@@ -1,10 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inscription - Fast Solar</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.container{
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    width:100%;
+    max-width:400px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+h2{
+    text-align:center;
+    color:#ff8c00;
+    margin-bottom:20px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-bottom:15px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:14px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:6px;
+    background:#ff8c00;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#e67600;
+}
+
+.link{
+    text-align:center;
+    margin-top:15px;
+}
+
+.link a{
+    color:#ff8c00;
+    text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Créer un compte Fast Solar</h2>
+
+    <form id="registerForm">
+        <input type="text" id="phone" placeholder="Numéro de téléphone" required>
+        <input type="password" id="password" placeholder="Mot de passe" required>
+        <input type="text" id="referralInput" placeholder="Code de parrain (facultatif)">
+        <button type="submit">S'inscrire</button>
+    </form>
+
+    <div class="link">
+        Déjà inscrit ? <a href="login.html">Se connecter</a>
+    </div>
+</div>
+
 <script type="module">
-
-// 🔥 Firebase
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// ⚠️ METS TES VRAIES INFOS FIREBASE ICI
 const firebaseConfig = {
   apiKey: "VOTRE_API_KEY",
   authDomain: "VOTRE_PROJET.firebaseapp.com",
@@ -17,75 +100,52 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔥 Lire ?ref= dans l’URL
+const form = document.getElementById("registerForm");
+
 const urlParams = new URLSearchParams(window.location.search);
 const refFromUrl = urlParams.get("ref");
 
-const inputs = document.querySelectorAll("input");
-const phoneInput = inputs[0];
-const passwordInput = inputs[1];
-const referralInput = inputs[2];
-
-// Remplir automatiquement si lien de parrainage
-if (refFromUrl) {
-    referralInput.value = refFromUrl;
+if(refFromUrl){
+    document.getElementById("referralInput").value = refFromUrl;
 }
 
-// 🔥 Générer code unique
-function generateReferralCode() {
+function generateReferralCode(){
     return "SOLAR-" + Date.now().toString().slice(-6);
 }
 
-document.getElementById("registerForm").addEventListener("submit", async function(e) {
+form.addEventListener("submit", async (e)=>{
     e.preventDefault();
 
-    const phone = phoneInput.value.trim();
-    const password = passwordInput.value.trim();
-    const referredBy = referralInput.value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const referredBy = document.getElementById("referralInput").value.trim() || null;
 
-    if (!phone || !password) {
-        alert("Veuillez remplir tous les champs obligatoires.");
+    if(!phone || !password){
+        alert("Veuillez remplir tous les champs");
         return;
     }
 
-    const myCode = generateReferralCode();
+    const existing = await getDocs(query(collection(db,"users"), where("phone","==",phone)));
 
-    // 🔥 Vérifier si le parrain existe
-    let parrainDoc = null;
-
-    if (referredBy) {
-        const q = query(collection(db, "users"), where("referralCode", "==", referredBy));
-        const querySnapshot = await getDocs(q);
-
-        if (!querySnapshot.empty) {
-            parrainDoc = querySnapshot.docs[0];
-        } else {
-            alert("Code de parrain invalide.");
-            return;
-        }
+    if(!existing.empty){
+        alert("Numéro déjà utilisé");
+        return;
     }
 
-    // 🔥 Créer nouvel utilisateur
-    await addDoc(collection(db, "users"), {
-        phone: phone,
-        password: password,
-        referralCode: myCode,
-        referredBy: referredBy || null,
-        level1Count: 0,
-        commission: 0,
-        createdAt: new Date()
+    await addDoc(collection(db,"users"),{
+        phone,
+        password,
+        referralCode: generateReferralCode(),
+        referredBy,
+        balance:0,
+        commission:0,
+        createdAt:new Date()
     });
 
-    // 🔥 Si parrain existe → augmenter son niveau 1 + commission
-    if (parrainDoc) {
-        await updateDoc(parrainDoc.ref, {
-            level1Count: increment(1),
-            commission: increment(1000) // 💰 Commission niveau 1 (modifiable)
-        });
-    }
-
     alert("Inscription réussie !");
-    window.location.href = "login.html";
+    window.location.href="login.html";
 });
-
 </script>
+
+</body>
+</html>
