@@ -5,109 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>First Solar - Boutique VIP</title>
     <style>
-        :root {
-            --primary: #f39c12;
-            --primary-dark: #d35400;
-            --dark-bg: rgba(0, 0, 0, 0.85);
-            --glass: rgba(255, 255, 255, 0.1);
-            --card-bg: rgba(30, 30, 30, 0.95);
-        }
-
-        body {
-            margin: 0; padding: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: url('IMG_2991.jpeg') no-repeat center center fixed;
-            background-size: cover;
-            color: white;
-            padding-bottom: 100px;
-        }
-
-        .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); z-index: -1;
-        }
-
-        header {
-            background: var(--dark-bg); padding: 15px;
-            text-align: center; border-bottom: 2px solid var(--primary);
-            position: sticky; top: 0; z-index: 10;
-            backdrop-filter: blur(10px);
-        }
-
-        .balance-header {
-            background: linear-gradient(to right, rgba(243, 156, 18, 0.2), transparent);
-            padding: 15px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--glass);
-            margin-bottom: 10px;
-        }
-        
-        .balance-label { font-size: 0.9em; opacity: 0.8; }
+        /* DESIGN CONSERVÉ À L'IDENTIQUE */
+        :root { --primary: #f39c12; --primary-dark: #d35400; --dark-bg: rgba(0, 0, 0, 0.85); --glass: rgba(255, 255, 255, 0.1); --card-bg: rgba(30, 30, 30, 0.95); }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: url('IMG_2991.jpeg') no-repeat center center fixed; background-size: cover; color: white; padding-bottom: 100px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: -1; }
+        header { background: var(--dark-bg); padding: 15px; text-align: center; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px); }
+        .balance-header { background: linear-gradient(to right, rgba(243, 156, 18, 0.2), transparent); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass); margin-bottom: 10px; }
         .balance-amount { font-size: 1.4em; font-weight: bold; color: var(--primary); }
-
         .container { padding: 10px 15px; display: flex; flex-direction: column; gap: 12px; }
-
-        .product-card {
-            background: var(--card-bg); border-radius: 12px; border: 1px solid var(--glass);
-            padding: 12px; display: flex; flex-direction: row; align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .product-card:hover { border-color: var(--primary); transform: translateX(5px); }
-
-        .icon-section { flex-shrink: 0; margin-right: 15px; text-align: center; }
-
-        .solar-icon {
-            width: 50px; height: 50px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            border-radius: 10px; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(243, 156, 18, 0.3);
-        }
-        .solar-icon svg { fill: white; width: 30px; height: 30px; }
-
-        .vip-badge {
-            margin-top: 5px; background: #222; color: var(--primary);
-            font-weight: bold; padding: 2px 8px; border-radius: 10px;
-            font-size: 0.7em; display: inline-block; border: 1px solid var(--primary);
-        }
-
-        .details-section { flex-grow: 1; }
-        .price { font-size: 1.2em; font-weight: bold; margin: 0 0 8px 0; color: white; }
-
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.75em; color: #ccc; }
-        .stats-grid div span { color: var(--primary); font-weight: bold; display: block; }
-
-        .action-section { flex-shrink: 0; margin-left: 10px; display: flex; flex-direction: column; align-items: flex-end; }
-
-        .btn-buy {
-            background: var(--primary); color: black; border: none;
-            padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;
-        }
-
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: #111; display: flex; justify-content: space-around;
-            padding: 15px 0; border-top: 1px solid var(--glass); z-index: 100;
-        }
-        .nav-item { color: #666; text-decoration: none; font-size: 0.8em; text-align: center; }
+        .product-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--glass); padding: 12px; display: flex; flex-direction: row; align-items: center; }
+        .solar-icon { width: 50px; height: 50px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .btn-buy { background: var(--primary); color: black; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 15px 0; }
+        .nav-item { color: #666; text-decoration: none; font-size: 0.8em; }
         .nav-item.active { color: var(--primary); }
     </style>
 </head>
 <body>
-
 <div class="overlay"></div>
-
-<header>
-    <h2 style="margin:0;">BOUTIQUE SOLAIRE</h2>
-</header>
-
-<div class="balance-header">
-    <div class="balance-label">Votre Solde Disponible :</div>
-    <div class="balance-amount" id="user-balance">0 CDF</div>
-</div>
-
-<div class="container" id="product-list">
-    </div>
+<header><h2>BOUTIQUE SOLAIRE</h2></header>
+<div class="balance-header"><div>Solde :</div><div class="balance-amount" id="user-balance">0 CDF</div></div>
+<div class="container" id="product-list"></div>
 
 <nav class="bottom-nav">
     <a href="dashboard.html" class="nav-item"><span>🏠 Accueil</span></a>
@@ -131,16 +49,15 @@
     const db = getDatabase(app);
     const userPhone = localStorage.getItem('userPhone');
 
-    // Liste officielle des produits
     const products = [
-        { id: 1, name: "VIP 1", price: 20000, daily: 4600, total: 207000, icon: "M3 3H21V5H3V3M3 7H21V12H3V7M3 14H21V19H3V14M3 21H21V23H3V21Z" },
-        { id: 2, name: "VIP 2", price: 40000, daily: 9200, total: 414000, icon: "M3 3H21V5H3V3M3 7H21V12H3V7M3 14H21V19H3V14M3 21H21V23H3V21Z" },
-        { id: 3, name: "VIP 3", price: 75000, daily: 17250, total: 776250, icon: "M12 2L15.5 5.5L12 9L8.5 5.5L12 2M4 12H2V7H4V12M22 7H20V12H22V7M4 20H2V15H4V20M22 15H20V20H22V15M18 12L21.5 15.5L18 19L14.5 15.5L18 12M6 12L9.5 15.5L6 19L2.5 15.5L6 12Z" },
-        { id: 4, name: "VIP 4", price: 120000, daily: 27600, total: 1242000, icon: "M12 2L15.5 5.5L12 9L8.5 5.5L12 2M4 12H2V7H4V12M22 7H20V12H22V7M4 20H2V15H4V20M22 15H20V20H22V15M18 12L21.5 15.5L18 19L14.5 15.5L18 12M6 12L9.5 15.5L6 19L2.5 15.5L6 12Z" },
-        { id: 5, name: "VIP 5", price: 250000, daily: 57500, total: 2587500, icon: "M11 2H13V7H11V2M7 7H17V9H18.5C19.33 9 20 9.67 20 10.5V20.5C20 21.33 19.33 22 18.5 22H5.5C4.67 22 4 21.33 4 20.5V10.5C4 9.67 4.67 9 5.5 9H7V7M7 11V15H10L8.5 18L11 20V16H17V11H7Z" },
-        { id: 6, name: "VIP 6", price: 400000, daily: 92000, total: 4140000, icon: "M11 2H13V7H11V2M7 7H17V9H18.5C19.33 9 20 9.67 20 10.5V20.5C20 21.33 19.33 22 18.5 22H5.5C4.67 22 4 21.33 4 20.5V10.5C4 9.67 4.67 9 5.5 9H7V7M7 11V15H10L8.5 18L11 20V16H17V11H7Z" },
-        { id: 7, name: "VIP 7", price: 800000, daily: 184000, total: 8228000, icon: "M3 6H7V9H3V6M9 6H15V9H9V6M17 6H21V9H17V6M3 11H7V14H3V11M9 11H15V14H9V11M17 11H21V14H17V11M3 16H7V19H3V16M9 16H15V19H9V16M17 16H21V19H17V16M11 1L13 4H11L13 4H11V1Z" },
-        { id: 8, name: "VIP 8", price: 1200000, daily: 276000, total: 12420000, icon: "M3 6H7V9H3V6M9 6H15V9H9V6M17 6H21V9H17V6M3 11H7V14H3V11M9 11H15V14H9V11M17 11H21V14H17V11M3 16H7V19H3V16M9 16H15V19H9V16M17 16H21V19H17V16M11 1L13 4H11L13 4H11V1Z" }
+        { id: 1, name: "VIP 1", price: 20000, daily: 4600, total: 207000 },
+        { id: 2, name: "VIP 2", price: 40000, daily: 9200, total: 414000 },
+        { id: 3, name: "VIP 3", price: 75000, daily: 17250, total: 776250 },
+        { id: 4, name: "VIP 4", price: 120000, daily: 27600, total: 1242000 },
+        { id: 5, name: "VIP 5", price: 250000, daily: 57500, total: 2587500 },
+        { id: 6, name: "VIP 6", price: 400000, daily: 92000, total: 4140000 },
+        { id: 7, name: "VIP 7", price: 800000, daily: 184000, total: 8228000 },
+        { id: 8, name: "VIP 8", price: 1200000, daily: 276000, total: 12420000 }
     ];
 
     // Affichage des produits
@@ -148,69 +65,74 @@
     products.forEach(p => {
         container.innerHTML += `
             <div class="product-card">
-                <div class="icon-section">
-                    <div class="solar-icon"><svg viewBox="0 0 24 24"><path d="${p.icon}"/></svg></div>
-                    <div class="vip-badge">${p.name}</div>
+                <div style="flex-grow:1">
+                    <div style="font-weight:bold">${p.name} - ${p.price.toLocaleString()} CDF</div>
+                    <small>Gain : ${p.daily} FC/jour</small>
                 </div>
-                <div class="details-section">
-                    <div class="price">${p.price.toLocaleString()} CDF</div>
-                    <div class="stats-grid">
-                        <div>Gain/Jour: <span>${p.daily.toLocaleString()} FC</span></div>
-                        <div>Total: <span>${p.total.toLocaleString()} FC</span></div>
-                    </div>
-                </div>
-                <div class="action-section">
-                    <button class="btn-buy" onclick="buyProduct(${p.id})">INVESTIR</button>
-                    <small style="font-size:0.6em; margin-top:5px; opacity:0.6;">45 Jours</small>
-                </div>
-            </div>
-        `;
+                <button class="btn-buy" onclick="buyProduct(${p.id})">INVESTIR</button>
+            </div>`;
     });
 
-    // Lecture du solde
     if (userPhone) {
-        onValue(ref(db, 'users/' + userPhone + '/solde'), (snap) => {
-            document.getElementById('user-balance').innerText = (snap.val() || 0).toLocaleString() + " CDF";
+        onValue(ref(db, 'users/' + userPhone + '/solde'), (s) => {
+            document.getElementById('user-balance').innerText = (s.val() || 0).toLocaleString() + " CDF";
         });
     }
 
-    // Fonction d'achat
-    window.buyProduct = async (id) => {
-        if (!userPhone) return alert("Connectez-vous !");
-        const product = products.find(p => p.id === id);
+    // --- LOGIQUE D'ACHAT AVEC COMMISSION 3 NIVEAUX ---
+    window.buyProduct = async (productId) => {
+        if (!userPhone) return;
+        const product = products.find(p => p.id === productId);
         const userRef = ref(db, 'users/' + userPhone);
-        
-        try {
-            const snap = await get(userRef);
-            const userData = snap.val();
-            const currentSolde = userData.solde || 0;
+        const snap = await get(userRef);
+        const userData = snap.val();
 
-            if (currentSolde < product.price) {
-                return alert("Solde insuffisant !");
+        if (userData.solde < product.price) return alert("Solde insuffisant !");
+
+        if (confirm(`Acheter ${product.name} ?`)) {
+            // 1. Déduire le prix et ajouter le gain quotidien
+            await update(userRef, { 
+                solde: userData.solde - product.price,
+                gain_quotidien_actif: (userData.gain_quotidien_actif || 0) + product.daily
+            });
+
+            // 2. DISTRIBUTION DES COMMISSIONS (MLM)
+            const distribution = [
+                { niv: 1, taux: 0.25, parent: userData.parraine_par }, // 25%
+                { niv: 2, taux: 0.03 },                                // 3%
+                { niv: 3, taux: 0.01 }                                 // 1%
+            ];
+
+            let currentParentPhone = userData.parraine_par;
+
+            for (let i = 0; i < distribution.length; i++) {
+                if (!currentParentPhone) break; // Stop si plus de parrain
+
+                const parentRef = ref(db, 'users/' + currentParentPhone);
+                const parentSnap = await get(parentRef);
+
+                if (parentSnap.exists()) {
+                    const gain = product.price * distribution[i].taux;
+                    const pData = parentSnap.val();
+                    
+                    await update(parentRef, {
+                        solde: (pData.solde || 0) + gain,
+                        gains_invitation: (pData.gains_invitation || 0) + gain
+                    });
+
+                    // Passer au parrain du parrain (Niveau suivant)
+                    currentParentPhone = pData.parraine_par; 
+                } else {
+                    break;
+                }
             }
 
-            if (confirm(`Confirmer l'achat du ${product.name} pour ${product.price} CDF ?`)) {
-                const newSolde = currentSolde - product.price;
-                const newDaily = (userData.gain_quotidien_actif || 0) + product.daily;
+            // 3. Enregistrer le panneau
+            await push(ref(db, 'users/' + userPhone + '/mes_panneaux'), {
+                nom: product.name, daily: product.daily, date_achat: new Date().toISOString()
+            });
 
-                // Mise à jour de l'utilisateur
-                await update(userRef, {
-                    solde: newSolde,
-                    gain_quotidien_actif: newDaily
-                });
-
-                // Enregistrement du panneau acheté
-                const panelsRef = ref(db, 'users/' + userPhone + '/mes_panneaux');
-                await push(panelsRef, {
-                    nom: product.name,
-                    daily: product.daily,
-                    date_achat: new Date().toISOString()
-                });
-
-                alert("Investissement réussi ! Vos gains seront mis à jour.");
-            }
-        } catch (e) {
-            alert("Erreur : " + e.message);
+            alert("Investissement réussi !");
         }
     };
 </script>
