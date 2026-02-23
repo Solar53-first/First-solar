@@ -9,43 +9,43 @@
         body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: url('IMG_2991.jpeg') no-repeat center center fixed; background-size: cover; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: white; }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1; }
         .auth-container { position: relative; z-index: 2; background: var(--dark-bg); padding: 30px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); }
-        h1 { color: var(--primary-color); margin-bottom: 5px; text-transform: uppercase; }
+        h1 { color: var(--primary-color); margin-bottom: 5px; text-transform: uppercase; font-size: 1.8em; }
         .input-group { margin-bottom: 15px; text-align: left; }
         label { display: block; margin-bottom: 5px; font-size: 0.85em; color: var(--primary-color); }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255, 255, 255, 0.1); color: white; box-sizing: border-box; }
-        .btn-submit { width: 100%; padding: 15px; background: var(--primary-color); border: none; color: black; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255, 255, 255, 0.1); color: white; box-sizing: border-box; outline: none; }
+        .btn-submit { width: 100%; padding: 15px; background: var(--primary-color); border: none; color: black; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
         .footer-link { margin-top: 20px; font-size: 0.9em; }
-        .footer-link a { color: var(--primary-color); text-decoration: none; }
+        .footer-link a { color: var(--primary-color); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
 <div class="overlay"></div>
 <div class="auth-container">
     <h1>FIRST SOLAR</h1>
-    <p>Créer un compte</p>
+    <p style="margin-bottom: 20px; opacity: 0.9;">Créer un compte</p>
     <form id="registerForm">
         <div class="input-group">
-            <label>Téléphone (+243...)</label>
+            <label>Téléphone (Format: +243...)</label>
             <input type="text" id="phone" placeholder="+243XXXXXXXXX" required>
         </div>
         <div class="input-group">
-            <label>Mot de passe</label>
-            <input type="password" id="password" maxlength="6" required>
+            <label>Mot de passe (6 chiffres)</label>
+            <input type="password" id="password" maxlength="6" placeholder="******" required>
         </div>
         <div class="input-group">
             <label>Code Parrain</label>
-            <input type="text" id="inviteCode">
+            <input type="text" id="inviteCode" placeholder="Optionnel">
         </div>
-        <button type="submit" class="btn-submit">S'INSCRIRE</button>
+        <button type="submit" class="btn-submit" id="submitBtn">S'INSCRIRE MAINTENANT</button>
     </form>
-    <div class="footer-link">Déjà inscrit ? <a href="login.html">Connexion</a></div>
+    <div class="footer-link">Déjà inscrit ? <a href="login.html">Connexion ici</a></div>
 </div>
 
 <script type="module">
-    // Importation sécurisée
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+    // REMPLACEZ PAR VOS INFOS RÉELLES ICI
     const firebaseConfig = {
         apiKey: "VOTRE_API_KEY",
         databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com",
@@ -56,28 +56,45 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Capture du code parrainage immédiatement
+    // --- CAPTURE DU CODE PARRAINAGE ---
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
     if (refCode) {
-        document.getElementById('inviteCode').value = refCode;
-        document.getElementById('inviteCode').readOnly = true;
+        const inviteField = document.getElementById('inviteCode');
+        inviteField.value = refCode;
+        inviteField.readOnly = true;
+        inviteField.style.opacity = "0.7";
     }
 
+    // --- LOGIQUE D'INSCRIPTION ---
     document.getElementById("registerForm").onsubmit = async (e) => {
         e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "CHARGEMENT...";
+
         const phone = document.getElementById('phone').value.trim();
         const password = document.getElementById('password').value.trim();
         const invite = document.getElementById('inviteCode').value.trim() || "SYSTEM";
         
+        // Nettoyage du numéro
         const cleanPhone = phone.replace(/\+/g, '').replace(/\s/g, '');
+
+        if (cleanPhone.length < 10) {
+            alert("Numéro invalide.");
+            btn.disabled = false;
+            btn.innerText = "S'INSCRIRE MAINTENANT";
+            return;
+        }
 
         try {
             const userRef = ref(db, 'users/' + cleanPhone);
             const snap = await get(userRef);
 
             if (snap.exists()) {
-                alert("Numéro déjà utilisé.");
+                alert("Ce numéro est déjà utilisé.");
+                btn.disabled = false;
+                btn.innerText = "S'INSCRIRE MAINTENANT";
                 return;
             }
 
@@ -90,13 +107,16 @@
                 solde: 0,
                 commissions: 0,
                 gain_quotidien_actif: 0,
-                date_inscription: new Date().toISOString()
+                date_inscription: new Date().toISOString(),
+                last_income_timestamp: 0
             });
 
-            alert("Succès ! Votre code : " + monCode);
+            alert("Compte créé ! Bienvenue chez First Solar.");
             window.location.href = "login.html";
         } catch (err) {
-            alert("Erreur : " + err.message);
+            alert("Erreur de connexion : " + err.message);
+            btn.disabled = false;
+            btn.innerText = "S'INSCRIRE MAINTENANT";
         }
     };
 </script>
