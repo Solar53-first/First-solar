@@ -5,87 +5,164 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>First Solar - Connexion</title>
     <style>
-        :root { --primary: #f39c12; --bg: rgba(0,0,0,0.9); }
-        body { margin: 0; font-family: sans-serif; background: url('IMG_2991.jpeg') no-repeat center center fixed; background-size: cover; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: white; }
-        .container { position: relative; z-index: 2; background: var(--bg); padding: 30px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--primary); backdrop-filter: blur(10px); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: white; box-sizing: border-box; }
-        .btn { width: 100%; padding: 14px; background: var(--primary); border: none; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-        .footer { margin-top: 15px; font-size: 0.8em; }
-        .footer a { color: var(--primary); text-decoration: none; }
+        :root {
+            --primary-color: #f39c12;
+            --dark-bg: rgba(0, 0, 0, 0.85);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: url('IMG_2991.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+
+        .auth-container {
+            position: relative;
+            z-index: 2;
+            background: var(--dark-bg);
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7);
+            width: 90%;
+            max-width: 380px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+        }
+
+        h1 { color: var(--primary-color); margin-bottom: 10px; font-size: 2em; text-transform: uppercase; }
+        .tagline { font-size: 0.9em; margin-bottom: 30px; opacity: 0.8; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-size: 0.85em; color: var(--primary-color); }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            border: none;
+            color: black;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        .btn-login:hover { background: #ffb433; transform: scale(1.02); }
+        .footer-link { margin-top: 25px; font-size: 0.9em; }
+        .footer-link a { color: var(--primary-color); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>FIRST SOLAR</h1>
-        <p>Connexion à votre espace</p>
-        <form id="loginForm">
-            <input type="text" id="phone" placeholder="+243XXXXXXXXX" maxlength="13" required>
-            <input type="password" id="password" placeholder="Mot de passe (6 chiffres)" maxlength="6" required>
-            <button type="submit" class="btn">SE CONNECTER</button>
-        </form>
-        <div class="footer">Pas de compte ? <a href="index.html">S'inscrire</a></div>
+
+<div class="overlay"></div>
+
+<div class="auth-container">
+    <h1>FIRST SOLAR</h1>
+    <p class="tagline">Connectez-vous à votre espace solaire</p>
+    
+    <form id="loginForm">
+        <div class="input-group">
+            <label>Numéro de téléphone</label>
+            <input type="text" id="phone" placeholder="+243XXXXXXXXX" required>
+        </div>
+        <div class="input-group">
+            <label>Mot de passe</label>
+            <input type="password" id="password" placeholder="6 chiffres" required>
+        </div>
+        
+        <button type="submit" class="btn-login">SE CONNECTER</button>
+    </form>
+
+    <div class="footer-link">
+        Pas encore de compte ? <a href="index.html">Créer un compte</a>
     </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // REMPLACE PAR TES CLÉS FIREBASE
-        const firebaseConfig = {
-            apiKey: "VOTRE_API_KEY",
-            authDomain: "votre-projet.firebaseapp.com",
-            projectId: "votre-projet",
-            storageBucket: "votre-projet.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "VOTRE_APP_ID"
-        };
+    // REMPLACE CES INFOS PAR TES CLÉS FIREBASE
+    const firebaseConfig = {
+        apiKey: "VOTRE_API_KEY",
+        authDomain: "votre-projet.firebaseapp.com",
+        projectId: "votre-projet",
+        storageBucket: "votre-projet.appspot.com",
+        messagingSenderId: "123456789",
+        appId: "VOTRE_APP_ID"
+    };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const phone = document.getElementById('phone').value.trim();
-            const password = document.getElementById('password').value;
+    document.getElementById("loginForm").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        
+        const phone = document.getElementById('phone').value.trim();
+        const password = document.getElementById('password').value.trim();
 
-            // 1. VÉRIFICATION DU NUMÉRO RDC (+243 suivi de 9 chiffres)
-            const phoneRegex = /^\+243\d{9}$/;
-            if (!phoneRegex.test(phone)) {
-                alert("ERREUR : Le numéro doit commencer par +243 suivi de 9 chiffres (ex: +243812345678).");
-                return;
-            }
+        // 1. VÉRIFICATION DU FORMAT RDC
+        if (!phone.startsWith("+243") || phone.length !== 13) {
+            alert("Erreur : Utilisez le format +243 suivi de 9 chiffres.");
+            return;
+        }
 
-            // 2. VÉRIFICATION DU MOT DE PASSE (Exactement 6 chiffres)
-            const passRegex = /^\d{6}$/;
-            if (!passRegex.test(password)) {
-                alert("ERREUR : Le mot de passe doit contenir exactement 6 chiffres.");
-                return;
-            }
+        // 2. VÉRIFICATION DU FORMAT MOT DE PASSE
+        if (!/^\d{6}$/.test(password)) {
+            alert("Erreur : Le mot de passe doit être composé de 6 chiffres.");
+            return;
+        }
 
-            try {
-                // Recherche de l'utilisateur dans la base de données
-                const userRef = doc(db, "users", phone);
-                const userSnap = await getDoc(userRef);
+        try {
+            const userRef = doc(db, "users", phone);
+            const userSnap = await getDoc(userRef);
 
-                if (!userSnap.exists()) {
-                    alert("Ce compte n'existe pas. Veuillez vous inscrire d'abord.");
-                    window.location.href = "index.html"; // Redirige vers la page d'inscription
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                
+                // 3. COMPARAISON DU MOT DE PASSE
+                if (userData.motDePasse === password) {
+                    localStorage.setItem('userPhone', phone);
+                    window.location.href = "dashboard.html"; // Direction Tableau de bord
                 } else {
-                    const userData = userSnap.data();
-                    
-                    // Vérification du mot de passe
-                    if (userData.motDePasse === password) {
-                        localStorage.setItem('userPhone', phone);
-                        window.location.href = "dashboard.html"; // Connexion réussie
-                    } else {
-                        alert("Mot de passe incorrect.");
-                    }
+                    alert("Mot de passe incorrect.");
                 }
-            } catch (err) { 
-                console.error(err);
-                alert("Erreur de connexion au serveur. Vérifiez votre connexion internet."); 
+            } else {
+                alert("Ce compte n'existe pas. Veuillez d'abord vous inscrire.");
+                window.location.href = "index.html";
             }
-        });
-    </script>
+        } catch (error) {
+            console.error(error);
+            alert("Erreur de connexion au serveur.");
+        }
+    });
+</script>
+
 </body>
 </html>
