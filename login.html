@@ -1,133 +1,91 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Connexion - Fast Solar</title>
-
-<style>
-body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
-}
-
-.container{
-    background:white;
-    padding:30px;
-    border-radius:12px;
-    width:100%;
-    max-width:400px;
-    box-shadow:0 10px 30px rgba(0,0,0,0.3);
-}
-
-h2{
-    text-align:center;
-    color:#ff8c00;
-    margin-bottom:20px;
-}
-
-input{
-    width:100%;
-    padding:12px;
-    margin-bottom:15px;
-    border-radius:6px;
-    border:1px solid #ccc;
-    font-size:14px;
-}
-
-button{
-    width:100%;
-    padding:12px;
-    border:none;
-    border-radius:6px;
-    background:#ff8c00;
-    color:white;
-    font-size:16px;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#e67600;
-}
-
-.link{
-    text-align:center;
-    margin-top:15px;
-}
-
-.link a{
-    color:#ff8c00;
-    text-decoration:none;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Solar - Connexion</title>
+    <style>
+        :root { --primary: #f39c12; --bg: rgba(0,0,0,0.9); }
+        body { margin: 0; font-family: sans-serif; background: url('IMG_2991.jpeg') no-repeat center center fixed; background-size: cover; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: white; }
+        .container { position: relative; z-index: 2; background: var(--bg); padding: 30px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--primary); backdrop-filter: blur(10px); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: white; box-sizing: border-box; }
+        .btn { width: 100%; padding: 14px; background: var(--primary); border: none; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .footer { margin-top: 15px; font-size: 0.8em; }
+        .footer a { color: var(--primary); text-decoration: none; }
+    </style>
 </head>
-
 <body>
-
-<div class="container">
-    <h2>Connexion Fast Solar</h2>
-
-    <form id="loginForm">
-        <input type="text" id="phone" placeholder="Numéro de téléphone" required>
-        <input type="password" id="password" placeholder="Mot de passe" required>
-        <button type="submit">Se connecter</button>
-    </form>
-
-    <div class="link">
-        Pas encore inscrit ? <a href="inscription.html">Créer un compte</a>
+    <div class="container">
+        <h1>FIRST SOLAR</h1>
+        <p>Connexion à votre espace</p>
+        <form id="loginForm">
+            <input type="text" id="phone" placeholder="+243XXXXXXXXX" maxlength="13" required>
+            <input type="password" id="password" placeholder="Mot de passe (6 chiffres)" maxlength="6" required>
+            <button type="submit" class="btn">SE CONNECTER</button>
+        </form>
+        <div class="footer">Pas de compte ? <a href="index.html">S'inscrire</a></div>
     </div>
-</div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "VOTRE_API_KEY",
-  authDomain: "VOTRE_PROJET.firebaseapp.com",
-  projectId: "VOTRE_PROJET",
-  storageBucket: "VOTRE_PROJET.appspot.com",
-  messagingSenderId: "XXXX",
-  appId: "XXXX"
-};
+        // REMPLACE PAR TES CLÉS FIREBASE
+        const firebaseConfig = {
+            apiKey: "VOTRE_API_KEY",
+            authDomain: "votre-projet.firebaseapp.com",
+            projectId: "votre-projet",
+            storageBucket: "votre-projet.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "VOTRE_APP_ID"
+        };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-document.getElementById("loginForm").addEventListener("submit", async (e)=>{
-    e.preventDefault();
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value;
 
-    const phone = document.getElementById("phone").value.trim();
-    const password = document.getElementById("password").value.trim();
+            // 1. VÉRIFICATION DU NUMÉRO RDC (+243 suivi de 9 chiffres)
+            const phoneRegex = /^\+243\d{9}$/;
+            if (!phoneRegex.test(phone)) {
+                alert("ERREUR : Le numéro doit commencer par +243 suivi de 9 chiffres (ex: +243812345678).");
+                return;
+            }
 
-    const q = query(
-        collection(db,"users"),
-        where("phone","==",phone),
-        where("password","==",password)
-    );
+            // 2. VÉRIFICATION DU MOT DE PASSE (Exactement 6 chiffres)
+            const passRegex = /^\d{6}$/;
+            if (!passRegex.test(password)) {
+                alert("ERREUR : Le mot de passe doit contenir exactement 6 chiffres.");
+                return;
+            }
 
-    const snapshot = await getDocs(q);
+            try {
+                // Recherche de l'utilisateur dans la base de données
+                const userRef = doc(db, "users", phone);
+                const userSnap = await getDoc(userRef);
 
-    if(snapshot.empty){
-        alert("Identifiants incorrects");
-        return;
-    }
-
-    const userDoc = snapshot.docs[0];
-
-    localStorage.setItem("user", JSON.stringify({
-        id:userDoc.id,
-        ...userDoc.data()
-    }));
-
-    window.location.href="dashboard.html";
-});
-</script>
-
+                if (!userSnap.exists()) {
+                    alert("Ce compte n'existe pas. Veuillez vous inscrire d'abord.");
+                    window.location.href = "index.html"; // Redirige vers la page d'inscription
+                } else {
+                    const userData = userSnap.data();
+                    
+                    // Vérification du mot de passe
+                    if (userData.motDePasse === password) {
+                        localStorage.setItem('userPhone', phone);
+                        window.location.href = "dashboard.html"; // Connexion réussie
+                    } else {
+                        alert("Mot de passe incorrect.");
+                    }
+                }
+            } catch (err) { 
+                console.error(err);
+                alert("Erreur de connexion au serveur. Vérifiez votre connexion internet."); 
+            }
+        });
+    </script>
 </body>
 </html>
