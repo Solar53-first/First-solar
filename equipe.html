@@ -5,114 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>First Solar - Mon Équipe</title>
     <style>
-        :root {
-            --primary: #f39c12;
-            --dark-bg: rgba(0, 0, 0, 0.85);
-            --glass: rgba(255, 255, 255, 0.1);
-        }
+        :root { --primary: #f39c12; --dark-card: rgba(0, 0, 0, 0.85); --glass: rgba(255, 255, 255, 0.1); }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: url('IMG_2991.jpeg') no-repeat center center fixed; background-size: cover; color: white; padding-bottom: 90px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: -1; }
+        .container { padding: 20px; }
+        
+        /* Stats d'équipe */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background: var(--dark-card); padding: 15px; border-radius: 15px; border: 1px solid var(--glass); text-align: center; }
+        .stat-card h4 { margin: 0; font-size: 0.8em; opacity: 0.7; }
+        .stat-card p { margin: 5px 0 0; font-size: 1.2em; font-weight: bold; color: var(--primary); }
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: url('IMG_2991.jpeg') no-repeat center center fixed;
-            background-size: cover;
-            color: white;
-            padding-bottom: 90px;
-        }
+        /* Onglets Niveaux */
+        .tabs { display: flex; justify-content: space-around; background: var(--dark-card); border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--glass); }
+        .tab { padding: 12px; cursor: pointer; font-size: 0.9em; opacity: 0.6; transition: 0.3s; }
+        .tab.active { opacity: 1; color: var(--primary); border-bottom: 2px solid var(--primary); }
 
-        .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); z-index: -1;
-        }
+        /* Liste des membres */
+        .member-list { background: var(--dark-card); border-radius: 15px; padding: 10px; min-height: 200px; border: 1px solid var(--glass); }
+        .member-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--glass); font-size: 0.9em; }
+        .member-item:last-child { border-bottom: none; }
+        .no-data { text-align: center; padding: 40px; opacity: 0.5; }
 
-        header {
-            background: var(--dark-bg);
-            padding: 20px;
-            text-align: center;
-            border-bottom: 2px solid var(--primary);
-            backdrop-filter: blur(10px);
-        }
-
-        .container { padding: 15px; }
-
-        .referral-box {
-            background: var(--glass);
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            border: 1px dashed var(--primary);
-            margin-bottom: 20px;
-            backdrop-filter: blur(5px);
-        }
-
-        .referral-code {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: var(--primary);
-            margin: 10px 0;
-            letter-spacing: 2px;
-        }
-
-        .btn-copy {
-            background: var(--primary);
-            color: black;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .team-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: rgba(0,0,0,0.6);
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            border-left: 4px solid var(--primary);
-        }
-
-        .stat-card span { display: block; font-size: 0.8em; opacity: 0.7; }
-        .stat-card strong { font-size: 1.2em; color: var(--primary); }
-
-        .level-row {
-            background: var(--dark-bg);
-            margin-bottom: 10px;
-            padding: 15px;
-            border-radius: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid var(--glass);
-        }
-
-        .level-info h4 { margin: 0; color: var(--primary); }
-        .level-info p { margin: 5px 0 0; font-size: 0.8em; opacity: 0.6; }
-
-        .level-commission { text-align: right; }
-
-        .percent-badge {
-            background: #27ae60;
-            color: white;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 0.8em;
-            font-weight: bold;
-        }
-
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: #111; display: flex; justify-content: space-around;
-            padding: 15px 0; border-top: 1px solid var(--glass);
-        }
-        .nav-item { color: #666; text-decoration: none; font-size: 0.8em; text-align: center; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--glass); z-index: 100; }
+        .nav-item { text-align: center; color: #888; text-decoration: none; font-size: 0.8em; }
         .nav-item.active { color: var(--primary); }
     </style>
 </head>
@@ -120,102 +36,115 @@
 
 <div class="overlay"></div>
 
-<header>
-    <h2 style="margin:0;">MON ÉQUIPE</h2>
-</header>
-
 <div class="container">
+    <h2 style="color: var(--primary);">Mon Réseau Solaire</h2>
     
-    <div class="referral-box">
-        <span>Mon Code d'Invitation</span>
-        <div class="referral-code" id="refCode">SOLAR-8821</div>
-        <button class="btn-copy" id="copyBtn">Copier le lien</button>
-    </div>
-
-    <div class="team-stats">
+    <div class="stats-grid">
         <div class="stat-card">
-            <span>Membres totaux</span>
-            <strong>0</strong>
+            <h4>Taille Équipe</h4>
+            <p id="totalTeam">0</p>
         </div>
         <div class="stat-card">
-            <span>Gains équipe</span>
-            <strong>0 CDF</strong>
+            <h4>Gains Totaux</h4>
+            <p id="totalGains">0 CDF</p>
         </div>
     </div>
 
-    <h3 style="font-size: 1em; margin-bottom: 15px; border-left: 3px solid var(--primary); padding-left: 10px;">Répartition des Commissions</h3>
-
-    <div class="level-row">
-        <div class="level-info">
-            <h4>Niveau 1</h4>
-            <p>Membres directs : 0</p>
-        </div>
-        <div class="level-commission">
-            <span class="percent-badge">25%</span>
-            <div style="font-size: 0.9em; margin-top:5px;">0 CDF</div>
-        </div>
+    <div class="tabs">
+        <div class="tab active" onclick="switchLevel(1)">Niveau 1</div>
+        <div class="tab" onclick="switchLevel(2)">Niveau 2</div>
+        <div class="tab" onclick="switchLevel(3)">Niveau 3</div>
     </div>
 
-    <div class="level-row">
-        <div class="level-info">
-            <h4>Niveau 2</h4>
-            <p>Filleuls de N1 : 0</p>
-        </div>
-        <div class="level-commission">
-            <span class="percent-badge">3%</span>
-            <div style="font-size: 0.9em; margin-top:5px;">0 CDF</div>
-        </div>
+    <div class="member-list" id="memberContainer">
+        <div class="no-data">Chargement du réseau...</div>
     </div>
-
-    <div class="level-row">
-        <div class="level-info">
-            <h4>Niveau 3</h4>
-            <p>Filleuls de N2 : 0</p>
-        </div>
-        <div class="level-commission">
-            <span class="percent-badge">1%</span>
-            <div style="font-size: 0.9em; margin-top:5px;">0 CDF</div>
-        </div>
-    </div>
-
 </div>
 
 <nav class="bottom-nav">
-    <a href="dashboard.html" class="nav-item"><span>🏠 Accueil</span></a>
-    <a href="shop.html" class="nav-item"><span>☀️ Produits</span></a>
-    <a href="equipe.html" class="nav-item active"><span>👥 Équipe</span></a>
-    <a href="profil.html" class="nav-item"><span>👤 Profil</span></a>
+    <a href="dashboard.html" class="nav-item">🏠 Accueil</a>
+    <a href="shop.html" class="nav-item">☀️ Produits</a>
+    <a href="equipe.html" class="nav-item active">👥 Équipe</a>
+    <a href="profil.html" class="nav-item">👤 Profil</a>
 </nav>
 
-<!-- SCRIPT AJOUTÉ (NE CHANGE PAS LE DESIGN) -->
-<script>
-document.addEventListener("DOMContentLoaded", function() {
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const codeElement = document.getElementById("refCode");
-    const copyBtn = document.getElementById("copyBtn");
+    const firebaseConfig = {
+        apiKey: "VOTRE_API_KEY",
+        authDomain: "votre-projet.firebaseapp.com",
+        projectId: "votre-projet",
+        storageBucket: "votre-projet.appspot.com",
+        messagingSenderId: "123456789",
+        appId: "VOTRE_APP_ID"
+    };
 
-    const referralCode = codeElement.innerText.trim();
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    // Génère automatiquement le lien d'invitation
-    const baseUrl = window.location.origin + window.location.pathname.replace("equipe.html","");
-    const referralLink = baseUrl + "?ref=" + referralCode;
+    const userPhone = localStorage.getItem('userPhone');
+    if (!userPhone) window.location.href = "index.html";
 
-    copyBtn.addEventListener("click", function() {
+    let network = { lv1: [], lv2: [], lv3: [] };
 
-        navigator.clipboard.writeText(referralLink).then(function() {
+    async function loadNetwork() {
+        // Obtenir son propre code d'invitation d'abord
+        const usersRef = collection(db, "users");
+        
+        // NIVEAU 1 : Chercher ceux dont le parrain est MON code
+        // Note: On suppose que 'mon_code_invitation' est stocké dans le profil
+        const q1 = query(usersRef, where("parrain_direct", "==", "SOLAR-" + userPhone.slice(-6)));
+        const snap1 = await getDocs(q1);
+        snap1.forEach(doc => network.lv1.push(doc.data()));
 
-            copyBtn.innerText = "Lien copié ✔";
+        // NIVEAU 2 : Pour chaque membre du LV1, chercher leurs filleuls
+        for(let f1 of network.lv1) {
+            const q2 = query(usersRef, where("parrain_direct", "==", f1.mon_code_invitation));
+            const snap2 = await getDocs(q2);
+            snap2.forEach(doc => network.lv2.push(doc.data()));
+        }
 
-            setTimeout(function(){
-                copyBtn.innerText = "Copier le lien";
-            }, 2000);
+        // NIVEAU 3 : Pour chaque membre du LV2, chercher leurs filleuls
+        for(let f2 of network.lv2) {
+            const q3 = query(usersRef, where("parrain_direct", "==", f2.mon_code_invitation));
+            const snap3 = await getDocs(q3);
+            snap3.forEach(doc => network.lv3.push(doc.data()));
+        }
 
+        updateUI(1);
+        document.getElementById('totalTeam').innerText = network.lv1.length + network.lv2.length + network.lv3.length;
+    }
+
+    window.switchLevel = (lvl) => {
+        document.querySelectorAll('.tab').forEach((t, i) => {
+            t.classList.toggle('active', i === (lvl-1));
         });
+        updateUI(lvl);
+    };
 
-    });
+    function updateUI(lvl) {
+        const container = document.getElementById('memberContainer');
+        const list = network['lv' + lvl];
+        container.innerHTML = "";
 
-});
+        if(list.length === 0) {
+            container.innerHTML = '<div class="no-data">Aucun membre à ce niveau</div>';
+            return;
+        }
+
+        list.forEach(m => {
+            container.innerHTML += `
+                <div class="member-item">
+                    <span>📱 ${m.telephone.substring(0,7)}****</span>
+                    <span style="color:#27ae60;">Inscrit le ${new Date(m.date_inscription).toLocaleDateString()}</span>
+                </div>
+            `;
+        });
+    }
+
+    loadNetwork();
 </script>
-
 </body>
 </html>
