@@ -57,6 +57,17 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // --- NOUVEAU : CAPTURE DU CODE DANS L'URL ---
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const refCode = urlParams.get('ref');
+        if (refCode) {
+            document.getElementById('inviteCode').value = refCode;
+            // On peut même griser la case pour éviter qu'ils changent le code
+            document.getElementById('inviteCode').style.backgroundColor = "#2c3e50";
+        }
+    }
+
     document.getElementById("registerForm").addEventListener("submit", async function(e) {
         e.preventDefault();
         const phone = document.getElementById('phone').value.trim();
@@ -86,7 +97,8 @@
                 mon_code_invitation: monCodeUnique,
                 parrain_direct: inviteCode,
                 solde: 0,
-                revenu_total: 0,
+                commissions: 0, // Nouveau champ pour l'onglet équipe
+                gain_quotidien_actif: 0,
                 date_inscription: new Date().toISOString(),
                 last_income_timestamp: 0
             });
@@ -98,5 +110,6 @@
         }
     });
 </script>
+
 </body>
 </html>
