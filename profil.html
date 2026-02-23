@@ -137,7 +137,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "VOTRE_API_KEY",
@@ -153,25 +153,42 @@
     if (!userPhone) { 
         window.location.href = "login.html"; 
     } else {
-        // 1. Charger les infos utilisateur de base
         const userRef = ref(db, 'users/' + userPhone);
+        
         onValue(userRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
+                // Affichage des infos
                 document.getElementById('user-info').innerText = "ID: " + (data.mon_code_invitation || "Solar") + " | +" + userPhone;
                 document.getElementById('avatar-initial').innerText = (data.mon_code_invitation ? data.mon_code_invitation.charAt(0) : "U");
-                // On met quand même le revenu journalier stocké
                 document.getElementById('daily-income').innerText = (data.gain_quotidien_actif || 0).toLocaleString() + " FC";
+
+                // --- SYSTÈME DE GAIN AUTOMATIQUE (CHAQUE 24H) ---
+                const maintenant = new Date().getTime();
+                const derniereRecolte = data.derniere_recolte ? new Date(data.derniere_recolte).getTime() : new Date(data.date_inscription).getTime();
+                
+                const differenceMs = maintenant - derniereRecolte;
+                const joursPasses = Math.floor(differenceMs / (1000 * 60 * 60 * 24));
+
+                if (joursPasses >= 1 && data.gain_quotidien_actif > 0) {
+                    const gainTotal = joursPasses * data.gain_quotidien_actif;
+                    const nouveauSolde = (data.solde || 0) + gainTotal;
+                    
+                    update(userRef, {
+                        solde: nouveauSolde,
+                        derniere_recolte: new Date().toISOString()
+                    }).then(() => {
+                        alert("Revenu encaissé : " + gainTotal + " FC ajouté à votre solde.");
+                    });
+                }
             }
         });
 
-        // 2. COMPTER LES PANNEAUX RÉELS DANS LE DOSSIER 'mes_panneaux'
+        // Compter les panneaux
         const panelsRef = ref(db, 'users/' + userPhone + '/mes_panneaux');
         onValue(panelsRef, (snapshot) => {
             if (snapshot.exists()) {
-                const panelsData = snapshot.val();
-                // Compte le nombre de clés (panneaux) dans l'objet
-                const count = Object.keys(panelsData).length;
+                const count = Object.keys(snapshot.val()).length;
                 document.getElementById('active-panels').innerText = count;
             } else {
                 document.getElementById('active-panels').innerText = "0";
