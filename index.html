@@ -5,40 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>First Solar - Inscription</title>
     <style>
-        :root { --primary: #f39c12; --bg: rgba(0, 0, 0, 0.8); }
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: url('IMG_2991.jpeg') no-repeat center center fixed; background-size: cover; display: flex; justify-content: center; align-items: center; min-height: 100vh; color: white; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 1; }
-        .auth-container { position: relative; z-index: 2; background: var(--bg); padding: 30px; border-radius: 20px; width: 90%; max-width: 360px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px); }
-        h1 { color: var(--primary); margin: 0 0 10px; text-transform: uppercase; font-size: 1.8em; }
-        .input-group { margin-bottom: 15px; text-align: left; }
-        label { display: block; margin-bottom: 5px; font-size: 0.8em; color: var(--primary); }
-        input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255, 255, 255, 0.1); color: white; box-sizing: border-box; outline: none; }
-        .btn-submit { width: 100%; padding: 15px; background: var(--primary); border: none; color: black; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
-        .footer-link { margin-top: 20px; font-size: 0.9em; }
-        .footer-link a { color: var(--primary); text-decoration: none; font-weight: bold; }
+        :root { --primary: #f39c12; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        /* Image de fond avec fallback couleur sombre */
+        .bg-image { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('IMG_2991.jpeg') no-repeat center center fixed; background-size: cover; z-index: -1; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 0; }
+        .auth-container { position: relative; z-index: 10; background: rgba(0, 0, 0, 0.85); padding: 30px; border-radius: 20px; width: 90%; max-width: 360px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+        h1 { color: var(--primary); text-transform: uppercase; margin: 0 0 10px; font-size: 1.8em; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: rgba(255,255,255,0.1); color: white; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; background: var(--primary); border: none; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
+        .btn:disabled { background: #555; cursor: not-allowed; }
+        a { color: var(--primary); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
+<div class="bg-image"></div>
 <div class="overlay"></div>
 <div class="auth-container">
     <h1>FIRST SOLAR</h1>
-    <p style="margin-bottom: 20px;">Inscription Partenaire</p>
-    <form id="registerForm">
-        <div class="input-group">
-            <label>Numéro de téléphone</label>
-            <input type="text" id="phone" placeholder="+243XXXXXXXXX" required>
-        </div>
-        <div class="input-group">
-            <label>Mot de passe (6 chiffres)</label>
-            <input type="password" id="password" maxlength="6" placeholder="******" required>
-        </div>
-        <div class="input-group">
-            <label>Code d'invitation</label>
-            <input type="text" id="inviteCode" placeholder="Code parrain">
-        </div>
-        <button type="submit" class="btn-submit" id="subBtn">Créer mon compte</button>
+    <p id="status">Créer un compte</p>
+    <form id="regForm">
+        <input type="text" id="phone" placeholder="Téléphone (+243...)" required>
+        <input type="password" id="pass" placeholder="Mot de passe (6 chiffres)" maxlength="6" required>
+        <input type="text" id="ref" placeholder="Code parrain">
+        <button type="submit" class="btn" id="btnSubmit">S'INSCRIRE</button>
     </form>
-    <div class="footer-link">Déjà inscrit ? <a href="login.html">Se connecter</a></div>
+    <p style="font-size: 0.85em; margin-top: 20px;">Déjà membre ? <a href="login.html">Connexion</a></p>
 </div>
 
 <script type="module">
@@ -55,54 +47,66 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Auto-détection du parrain
+    // Détection du parrain dans l'URL
     const urlParams = new URLSearchParams(window.location.search);
-    const refCode = urlParams.get('ref');
-    if (refCode) {
-        document.getElementById('inviteCode').value = refCode;
-        document.getElementById('inviteCode').readOnly = true;
+    const codeURL = urlParams.get('ref');
+    if (codeURL) {
+        document.getElementById('ref').value = codeURL;
+        document.getElementById('ref').readOnly = true;
+        document.getElementById('status').innerText = "Invité par " + codeURL;
     }
 
-    document.getElementById("registerForm").onsubmit = async (e) => {
+    document.getElementById('regForm').onsubmit = async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('subBtn');
+        const btn = document.getElementById('btnSubmit');
         btn.disabled = true;
-        btn.innerText = "Traitement...";
+        btn.innerText = "CRÉATION EN COURS...";
 
-        const tel = document.getElementById('phone').value.trim().replace(/\+/g, '').replace(/\s/g, '');
-        const pass = document.getElementById('password').value;
-        const codeP = document.getElementById('inviteCode').value || "SYSTEM";
+        const phoneRaw = document.getElementById('phone').value.trim();
+        const pass = document.getElementById('pass').value;
+        const parrain = document.getElementById('ref').value || "SYSTEM";
+        
+        // Nettoyage : garde uniquement les chiffres
+        const tel = phoneRaw.replace(/\D/g, '');
+
+        if (tel.length < 10) {
+            alert("Numéro invalide");
+            btn.disabled = false;
+            btn.innerText = "S'INSCRIRE";
+            return;
+        }
 
         try {
             const userRef = ref(db, 'users/' + tel);
-            const snap = await get(userRef);
+            const snapshot = await get(userRef);
 
-            if (snap.exists()) {
-                alert("Ce numéro est déjà enregistré.");
+            if (snapshot.exists()) {
+                alert("Ce numéro est déjà inscrit !");
                 btn.disabled = false;
-                btn.innerText = "Créer mon compte";
+                btn.innerText = "S'INSCRIRE";
                 return;
             }
 
             const monCode = "SOLAR-" + tel.slice(-5);
             await set(userRef, {
-                telephone: tel,
+                telephone: "+" + tel,
                 motDePasse: pass,
                 mon_code_invitation: monCode,
-                parrain_direct: codeP,
+                parrain_direct: parrain,
                 solde: 0,
                 commissions: 0,
                 gain_quotidien_actif: 0,
-                date_inscription: new Date().toISOString(),
-                last_income_timestamp: 0
+                date_inscription: new Date().toISOString()
             });
 
-            alert("Bienvenue chez First Solar ! Votre code : " + monCode);
+            alert("Bienvenue ! Notez votre code : " + monCode);
+            // Redirection relative (reste dans le dossier First-solar)
             window.location.href = "login.html";
+
         } catch (err) {
-            alert("Erreur réseau. Vérifiez votre connexion.");
+            alert("Erreur Firebase : " + err.message);
             btn.disabled = false;
-            btn.innerText = "Créer mon compte";
+            btn.innerText = "S'INSCRIRE";
         }
     };
 </script>
