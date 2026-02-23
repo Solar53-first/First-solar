@@ -10,6 +10,7 @@
             --dark-bg: rgba(0, 0, 0, 0.9);
             --glass: rgba(255, 255, 255, 0.1);
             --danger: #e74c3c;
+            --success: #27ae60;
         }
 
         body {
@@ -64,13 +65,19 @@
             width: 100%; padding: 15px; background: var(--primary);
             border: none; border-radius: 8px; font-weight: bold;
             cursor: pointer; font-size: 1em; text-transform: uppercase;
+            transition: 0.3s;
+        }
+
+        /* Le bouton devient vert quand il est prêt */
+        .btn-withdraw:not(:disabled) {
+            background: var(--success);
+            box-shadow: 0 0 15px rgba(39, 174, 96, 0.5);
         }
 
         .btn-withdraw:disabled {
             background: #555; cursor: not-allowed;
         }
 
-        /* --- Bottom Nav --- */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: #111; display: flex; justify-content: space-around;
@@ -93,7 +100,13 @@
         <div class="info-box">
             • Minimum : <b>6 000 CDF</b><br>
             • Frais : <b>15%</b><br>
+            • Limite : <b>1 retrait maximum par jour</b><br>
             • Heures : <b>11:00 - 16:00</b> chaque jour.
+        </div>
+
+        <div class="input-group">
+            <label>Numéro de réception (M-Pesa/Orange/Airtel)</label>
+            <input type="text" id="phoneWithdraw" placeholder="08XXXXXXXX">
         </div>
 
         <div class="input-group">
@@ -113,7 +126,7 @@
         </div>
 
         <p id="time-msg" style="font-size:0.75em; color:var(--danger); text-align:center; margin-bottom:15px;">
-            Vérification de l'heure en cours...
+            Vérification...
         </p>
 
         <button class="btn-withdraw" id="btnWithdraw" disabled>DEMANDER LE RETRAIT</button>
@@ -128,8 +141,8 @@
         const final = amount - fees;
 
         if(amount >= 6000) {
-            document.getElementById('fees').innerText = fees.toLocaleString() + " CDF";
-            document.getElementById('final').innerText = final.toLocaleString() + " CDF";
+            document.getElementById('fees').innerText = Math.floor(fees).toLocaleString() + " CDF";
+            document.getElementById('final').innerText = Math.floor(final).toLocaleString() + " CDF";
         } else {
             document.getElementById('fees').innerText = "0 CDF";
             document.getElementById('final').innerText = "0 CDF";
@@ -143,46 +156,97 @@
         const now = new Date();
         const hour = now.getHours();
         
-        // Vérification heure (11h à 16h)
         const isCorrectTime = (hour >= 11 && hour < 16);
         
         if (amount >= 6000 && isCorrectTime) {
             btn.disabled = false;
             document.getElementById('time-msg').style.color = "#27ae60";
-            document.getElementById('time-msg').innerText = "Le service de retrait est actuellement ouvert.";
+            document.getElementById('time-msg').innerText = "Le service est ouvert.";
         } else if (!isCorrectTime) {
             btn.disabled = true;
-            document.getElementById('time-msg').innerText = "Retraits fermés. Revenez entre 11h et 16h.";
+            document.getElementById('time-msg').style.color = "#e74c3c";
+            document.getElementById('time-msg').innerText = "Fermé (Ouvrira à 11h00).";
         } else {
             btn.disabled = true;
         }
     }
-    
-    // Lancer au chargement
     checkRequirements();
 </script>
 
 <script type="module">
-  // 1. Importer les fonctions nécessaires
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getDatabase, ref, get, push, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  // 2. Vos clés (À récupérer sur console.firebase.google.com)
   const firebaseConfig = {
     apiKey: "VOTRE_API_KEY",
-    authDomain: "votre-projet.firebaseapp.com",
-    projectId: "votre-projet",
-    storageBucket: "votre-projet.appspot.com",
-    messagingSenderId: "123456789",
+    databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com",
+    projectId: "firstsolar-e2ba3",
     appId: "VOTRE_APP_ID"
   };
 
-  // 3. Initialiser la connexion
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const db = getDatabase(app);
 
-  // 4. VOTRE LOGIQUE ICI (Ex: Envoyer le TID ou Valider)
+  document.getElementById('btnWithdraw').onclick = async () => {
+      const amount = parseInt(document.getElementById('amount').value);
+      const withdrawPhone = document.getElementById('phoneWithdraw').value.trim();
+      const userPhone = localStorage.getItem('userPhone');
+      
+      if (!withdrawPhone || withdrawPhone.length < 10) { 
+          alert("Entrez un numéro de réception valide."); 
+          return; 
+      }
+
+      const btn = document.getElementById('btnWithdraw');
+      btn.disabled = true;
+      btn.innerText = "PATIENTEZ...";
+
+      try {
+          const userRef = ref(db, 'users/' + userPhone);
+          const snap = await get(userRef);
+
+          if (snap.exists()) {
+              const userData = snap.val();
+              const currentSolde = userData.solde || 0;
+
+              // --- SÉCURITÉ : 1 RETRAIT PAR JOUR ---
+              const today = new Date().toDateString();
+              if (userData.dernier_retrait === today) {
+                  alert("Limite atteinte : Vous ne pouvez faire qu'un seul retrait par jour.");
+                  btn.disabled = false;
+                  btn.innerText = "DEMANDER LE RETRAIT";
+                  return;
+              }
+
+              if (currentSolde >= amount) {
+                  // 1. Déduire du solde ET marquer la date du jour
+                  await update(userRef, { 
+                      solde: currentSolde - amount,
+                      dernier_retrait: today 
+                  });
+
+                  // 2. Envoyer la demande à l'admin
+                  const retraitRef = ref(db, 'demandes_retrait');
+                  await push(retraitRef, {
+                      telephone: userPhone,
+                      numero_retrait: withdrawPhone,
+                      montant: amount,
+                      timestamp: Date.now()
+                  });
+
+                  alert("Félicitations ! Votre demande est envoyée. L'argent a été déduit de votre solde.");
+                  window.location.href = "dashboard.html";
+              } else {
+                  alert("Solde insuffisant.");
+                  btn.disabled = false;
+                  btn.innerText = "DEMANDER LE RETRAIT";
+              }
+          }
+      } catch (e) {
+          alert("Erreur de connexion.");
+          btn.disabled = false;
+      }
+  };
 </script>
-
 </body>
 </html>
