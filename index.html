@@ -6,31 +6,27 @@
     <title>First Solar - Inscription</title>
     <style>
         :root { --primary: #f39c12; }
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        /* Image de fond avec fallback couleur sombre */
-        .bg-image { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('IMG_2991.jpeg') no-repeat center center fixed; background-size: cover; z-index: -1; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 0; }
-        .auth-container { position: relative; z-index: 10; background: rgba(0, 0, 0, 0.85); padding: 30px; border-radius: 20px; width: 90%; max-width: 360px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
-        h1 { color: var(--primary); text-transform: uppercase; margin: 0 0 10px; font-size: 1.8em; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: #111 url('IMG_2991.jpeg') no-repeat center center fixed; background-size: cover; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1; }
+        .auth-container { position: relative; z-index: 2; background: rgba(0, 0, 0, 0.85); padding: 30px; border-radius: 20px; width: 90%; max-width: 360px; text-align: center; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); }
+        h1 { color: var(--primary); text-transform: uppercase; margin: 0; font-size: 1.8em; }
         input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: rgba(255,255,255,0.1); color: white; box-sizing: border-box; }
-        .btn { width: 100%; padding: 15px; background: var(--primary); border: none; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
-        .btn:disabled { background: #555; cursor: not-allowed; }
+        .btn { width: 100%; padding: 15px; background: var(--primary); border: none; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 10px; }
         a { color: var(--primary); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
-<div class="bg-image"></div>
 <div class="overlay"></div>
 <div class="auth-container">
     <h1>FIRST SOLAR</h1>
-    <p id="status">Créer un compte</p>
+    <p id="status">Créer un compte partenaire</p>
     <form id="regForm">
-        <input type="text" id="phone" placeholder="Téléphone (+243...)" required>
+        <input type="text" id="phone" placeholder="Téléphone (ex: +243...)" required>
         <input type="password" id="pass" placeholder="Mot de passe (6 chiffres)" maxlength="6" required>
-        <input type="text" id="ref" placeholder="Code parrain">
-        <button type="submit" class="btn" id="btnSubmit">S'INSCRIRE</button>
+        <input type="text" id="ref" placeholder="Code d'invitation">
+        <button type="submit" class="btn" id="btn">S'INSCRIRE</button>
     </form>
-    <p style="font-size: 0.85em; margin-top: 20px;">Déjà membre ? <a href="login.html">Connexion</a></p>
+    <p style="font-size: 0.85em; margin-top: 20px;">Déjà inscrit ? <a href="login.html">Connexion</a></p>
 </div>
 
 <script type="module">
@@ -47,67 +43,38 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Détection du parrain dans l'URL
+    // Capture auto du parrain
     const urlParams = new URLSearchParams(window.location.search);
-    const codeURL = urlParams.get('ref');
-    if (codeURL) {
-        document.getElementById('ref').value = codeURL;
-        document.getElementById('ref').readOnly = true;
-        document.getElementById('status').innerText = "Invité par " + codeURL;
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+        document.getElementById('ref').value = refCode;
+        document.getElementById('status').innerText = "Parrainé par : " + refCode;
     }
 
     document.getElementById('regForm').onsubmit = async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('btnSubmit');
-        btn.disabled = true;
-        btn.innerText = "CRÉATION EN COURS...";
+        const b = document.getElementById('btn');
+        b.disabled = true; b.innerText = "Chargement...";
 
-        const phoneRaw = document.getElementById('phone').value.trim();
-        const pass = document.getElementById('pass').value;
-        const parrain = document.getElementById('ref').value || "SYSTEM";
-        
-        // Nettoyage : garde uniquement les chiffres
-        const tel = phoneRaw.replace(/\D/g, '');
-
-        if (tel.length < 10) {
-            alert("Numéro invalide");
-            btn.disabled = false;
-            btn.innerText = "S'INSCRIRE";
-            return;
-        }
+        const tel = document.getElementById('phone').value.trim().replace(/\+/g, '').replace(/\s/g, '');
+        const p = document.getElementById('pass').value;
+        const r = document.getElementById('ref').value || "SYSTEM";
 
         try {
-            const userRef = ref(db, 'users/' + tel);
-            const snapshot = await get(userRef);
-
-            if (snapshot.exists()) {
-                alert("Ce numéro est déjà inscrit !");
-                btn.disabled = false;
-                btn.innerText = "S'INSCRIRE";
-                return;
-            }
+            const uRef = ref(db, 'users/' + tel);
+            const s = await get(uRef);
+            if(s.exists()) { alert("Numéro déjà utilisé !"); b.disabled = false; return; }
 
             const monCode = "SOLAR-" + tel.slice(-5);
-            await set(userRef, {
-                telephone: "+" + tel,
-                motDePasse: pass,
-                mon_code_invitation: monCode,
-                parrain_direct: parrain,
-                solde: 0,
-                commissions: 0,
-                gain_quotidien_actif: 0,
-                date_inscription: new Date().toISOString()
+            await set(uRef, {
+                telephone: tel, motDePasse: p, mon_code_invitation: monCode,
+                parrain_direct: r, solde: 0, commissions: 0, 
+                gain_quotidien_actif: 0, date_inscription: new Date().toISOString()
             });
 
             alert("Bienvenue ! Notez votre code : " + monCode);
-            // Redirection relative (reste dans le dossier First-solar)
             window.location.href = "login.html";
-
-        } catch (err) {
-            alert("Erreur Firebase : " + err.message);
-            btn.disabled = false;
-            btn.innerText = "S'INSCRIRE";
-        }
+        } catch(e) { alert("Erreur : " + e.message); b.disabled = false; }
     };
 </script>
 </body>
