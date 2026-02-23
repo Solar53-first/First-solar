@@ -43,13 +43,6 @@
 
         .container { padding: 15px; }
 
-        .card {
-            background: var(--dark-bg);
-            border-radius: 15px; padding: 20px;
-            margin-bottom: 20px; border: 1px solid var(--glass);
-        }
-
-        /* Stats Rapides Panneaux */
         .panel-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -68,21 +61,6 @@
         .stat-value { font-size: 1.2em; font-weight: bold; color: var(--primary); }
         .stat-label { font-size: 0.7em; opacity: 0.8; text-transform: uppercase; }
 
-        h3 { color: var(--primary); margin-top: 0; font-size: 1.1em; border-bottom: 1px solid var(--glass); padding-bottom: 10px; }
-
-        .input-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.8em; opacity: 0.7; margin-bottom: 5px; }
-        input {
-            width: 100%; padding: 12px; border-radius: 8px;
-            border: 1px solid var(--glass); background: rgba(255,255,255,0.05);
-            color: white; box-sizing: border-box;
-        }
-
-        .btn-save {
-            width: 100%; padding: 12px; background: var(--primary);
-            border: none; border-radius: 8px; font-weight: bold; cursor: pointer;
-        }
-
         .profile-menu { display: flex; flex-direction: column; gap: 10px; }
 
         .menu-link {
@@ -95,7 +73,7 @@
         .menu-link:hover { background: rgba(255,255,255,0.2); }
 
         .telegram-link { background: var(--telegram); margin-top: 10px; font-weight: bold; }
-        .btn-logout { margin-top: 20px; text-align: center; color: var(--danger); font-weight: bold; text-decoration: none; display: block; }
+        .btn-logout { margin-top: 20px; text-align: center; color: var(--danger); font-weight: bold; text-decoration: none; display: block; cursor: pointer; }
 
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%;
@@ -112,7 +90,7 @@
 
 <header>
     <div class="user-avatar" id="avatar-initial">U</div>
-    <h2 style="margin:0;" id="user-name">Utilisateur Solar</h2>
+    <h2 style="margin:0;" id="user-name">Membre Solar</h2>
     <p style="margin:5px 0; opacity:0.6; font-size:0.9em;" id="user-info">ID: Chargement... | +243 --- --- ---</p>
 </header>
 
@@ -129,21 +107,6 @@
         </div>
     </div>
     
-    <div class="card">
-        <h3>COORDONNÉES DE RETRAIT</h3>
-        <form id="payment-form">
-            <div class="input-group">
-                <label>Nom du titulaire</label>
-                <input type="text" id="holder-name" placeholder="Ex: Jean Mukendi">
-            </div>
-            <div class="input-group">
-                <label>Numéro de téléphone / Compte</label>
-                <input type="text" id="account-number" placeholder="Ex: 082 000 000">
-            </div>
-            <button type="button" class="btn-save" onclick="savePaymentInfo()">ENREGISTRER LES INFOS</button>
-        </form>
-    </div>
-
     <div class="profile-menu">
         <a href="mes_produits.html" class="menu-link" style="border: 1px solid var(--primary);">
             <span>📦 Mes panneaux actifs</span>
@@ -161,7 +124,7 @@
         </a>
     </div>
 
-    <a href="index.html" class="btn-logout">Déconnexion du compte</a>
+    <div class="btn-logout" id="logoutBtn">Déconnexion du compte</div>
 
 </div>
 
@@ -173,18 +136,36 @@
 </nav>
 
 <script type="module">
-    // Ici, vous ajouterez votre config Firebase
-    // Pour l'instant, c'est prêt à recevoir les fonctions d'enregistrement
-    window.savePaymentInfo = () => {
-        const name = document.getElementById('holder-name').value;
-        const num = document.getElementById('account-number').value;
-        if(name && num) {
-            alert("Informations de retrait enregistrées avec succès !");
-            // Logique Firebase updateDoc ici
-        } else {
-            alert("Veuillez remplir les deux champs.");
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "VOTRE_API_KEY",
+        databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com",
+        projectId: "firstsolar-e2ba3",
+        appId: "VOTRE_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const userPhone = localStorage.getItem('userPhone');
+
+    if (!userPhone) { window.location.href = "login.html"; }
+
+    const userRef = ref(db, 'users/' + userPhone);
+    onValue(userRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            document.getElementById('user-info').innerText = "ID: " + (data.mon_code_invitation || "Solar") + " | +" + userPhone;
+            document.getElementById('daily-income').innerText = (data.gain_quotidien_actif || 0).toLocaleString() + " FC";
+            document.getElementById('avatar-initial').innerText = (data.mon_code_invitation ? data.mon_code_invitation.charAt(6) : "U");
         }
-    }
+    });
+
+    document.getElementById('logoutBtn').onclick = () => { 
+        localStorage.clear(); 
+        window.location.href = "login.html";
+    };
 </script>
 
 </body>
