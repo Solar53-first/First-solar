@@ -5,21 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>First Solar - Tableau de Bord</title>
     <style>
-        :root { --primary: #f39c12; --dark-card: rgba(0, 0, 0, 0.8); --glass: rgba(255, 255, 255, 0.1); }
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: url('IMG_2991.jpeg') no-repeat center center fixed; background-size: cover; color: white; padding-bottom: 80px; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: -1; }
+        :root {
+            --primary: #f39c12;
+            --dark-card: rgba(0, 0, 0, 0.8);
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: url('IMG_2991.jpeg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            padding-bottom: 80px; /* Espace pour le menu bas */
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+
         .container { padding: 20px; }
-        .balance-card { background: linear-gradient(135deg, var(--primary), #e67e22); padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); margin-bottom: 20px; color: #000; }
+
+        /* --- Header & Solde --- */
+        .balance-card {
+            background: linear-gradient(135deg, var(--primary), #e67e22);
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            color: #000;
+        }
+
+        .balance-card h2 { margin: 0; font-size: 0.9em; text-transform: uppercase; opacity: 0.8; }
         .balance-amount { font-size: 2.2em; font-weight: bold; margin: 10px 0; }
-        .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .btn-action { padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; font-size: 1em; }
+
+        /* --- Boutons d'action --- */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .btn-action {
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1em;
+            transition: 0.3s;
+        }
+
         .recharge { background: #27ae60; color: white; }
         .retrait { background: white; color: #000; }
-        .about-section { background: var(--dark-card); padding: 20px; border-radius: 15px; border: 1px solid var(--glass); line-height: 1.6; backdrop-filter: blur(10px); }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--glass); z-index: 100; }
-        .nav-item { text-align: center; color: #888; text-decoration: none; font-size: 0.8em; }
+
+        /* --- Section Histoire --- */
+        .about-section {
+            background: var(--dark-card);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--glass);
+            line-height: 1.6;
+            backdrop-filter: blur(10px);
+        }
+
+        .about-section h3 { color: var(--primary); margin-top: 0; }
+        .about-section p { font-size: 0.95em; color: #ddd; text-align: justify; }
+
+        /* --- Navigation Basse --- */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #111;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid var(--glass);
+            z-index: 100;
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.8em;
+        }
+
         .nav-item.active { color: var(--primary); }
-        .link-box { background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; font-size: 0.8em; word-break: break-all; margin-top: 10px; border: 1px dashed var(--primary); }
+        .nav-item i { display: block; font-size: 1.5em; margin-bottom: 4px; }
+
     </style>
 </head>
 <body>
@@ -27,18 +111,13 @@
 <div class="overlay"></div>
 
 <div class="container">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <div>
-            <p style="margin-bottom: 2px; opacity: 0.8;">Bienvenue,</p>
-            <h3 id="displayPhone" style="margin-top: 0; color: var(--primary);">Chargement...</h3>
-        </div>
-        <button onclick="logout()" style="background: red; color: white; border: none; padding: 5px 10px; border-radius: 5px;">Quitter</button>
-    </div>
+    <p style="margin-bottom: 5px; opacity: 0.8;">Bienvenue chez First Solar,</p>
+    <h3 id="userDisplay" style="margin-top: 0;">Membre Solaire...</h3>
 
     <div class="balance-card">
-        <h2 style="margin: 0; font-size: 0.9em; text-transform: uppercase; opacity: 0.8;">Solde Total</h2>
-        <div class="balance-amount" id="userBalance">0.00 CDF</div>
-        <p style="margin: 0; font-size: 0.9em;">Commissions d'équipe : <strong id="userCommissions">0 CDF</strong></p>
+        <h2>Solde Total</h2>
+        <div id="soldeAffiche" class="balance-amount">Chargement...</div>
+        <p style="margin: 0; font-size: 0.8em;">Revenus cumulés aujourd'hui : 0 CDF</p>
     </div>
 
     <div class="action-grid">
@@ -47,73 +126,72 @@
     </div>
 
     <div class="about-section">
-        <h3 style="color: var(--primary); margin-top: 0;">🤝 Mon Lien d'Invitation</h3>
-        <p style="font-size: 0.9em; color: #ddd;">Partagez ce lien pour gagner des commissions sur les recharges de vos filleuls (Niveau 1, 2 et 3).</p>
-        <div class="link-box" id="referralLink">Génération du lien...</div>
-        <button onclick="copierLien()" style="margin-top: 10px; background: var(--primary); border: none; padding: 8px; border-radius: 5px; font-weight: bold; width: 100%; cursor: pointer;">COPIER LE LIEN</button>
+        <h3>Notre Vision : Éclairer l'Avenir</h3>
+        <p>
+            First Solar n'est pas seulement une plateforme, c'est une révolution énergétique née de la volonté de transformer le paysage énergétique africain. Fondée sur le principe que l'énergie solaire doit être accessible à tous, notre entreprise s'est imposée comme le leader innovant dans la distribution de solutions solaires intelligentes de petite échelle.
+        </p>
+        <p>
+            Depuis nos débuts, nous avons compris que le soleil est la ressource la plus abondante de notre continent. En combinant la technologie photovoltaïque de pointe avec un modèle participatif unique, First Solar permet à chaque citoyen de devenir un acteur majeur de la transition écologique. Nos micro-panneaux solaires sont conçus pour durer, offrant une efficacité énergétique maximale même dans les conditions les plus difficiles.
+        </p>
+        <p>
+            Travailler avec First Solar, c'est choisir l'indépendance. Nous croyons en un futur où chaque foyer peut produire sa propre énergie propre. Notre mission est de réduire la fracture énergétique tout en créant des opportunités économiques réelles pour notre communauté de partenaires. Ensemble, nous exploitons la puissance du soleil pour alimenter le développement, l'éducation et l'innovation technologique à travers tout le pays.
+        </p>
     </div>
 </div>
 
 <nav class="bottom-nav">
-    <a href="dashboard.html" class="nav-item active"><span>🏠 Accueil</span></a>
-    <a href="shop.html" class="nav-item"><span>☀️ Produits</span></a>
-    <a href="equipe.html" class="nav-item"><span>👥 Équipe</span></a>
-    <a href="profil.html" class="nav-item"><span>👤 Profil</span></a>
+    <a href="dashboard.html" class="nav-item active">
+        <span>🏠 Accueil</span>
+    </a>
+    <a href="shop.html" class="nav-item">
+        <span>☀️ Produits</span>
+    </a>
+    <a href="equipe.html" class="nav-item">
+        <span>👥 Équipe</span>
+    </a>
+    <a href="profil.html" class="nav-item">
+        <span>👤 Profil</span>
+    </a>
 </nav>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // N'OUBLIE PAS DE METTRE TES CLÉS ICI
-    const firebaseConfig = {
-        apiKey: "VOTRE_API_KEY",
-        authDomain: "votre-projet.firebaseapp.com",
-        projectId: "votre-projet",
-        storageBucket: "votre-projet.appspot.com",
-        messagingSenderId: "123456789",
-        appId: "VOTRE_APP_ID"
-    };
+  const firebaseConfig = {
+    apiKey: "VOTRE_API_KEY",
+    authDomain: "votre-projet.firebaseapp.com",
+    projectId: "votre-projet",
+    storageBucket: "votre-projet.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "VOTRE_APP_ID"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    const userPhone = localStorage.getItem('userPhone');
-    let monLienComplet = "";
+  const userPhone = localStorage.getItem("userPhone");
 
-    if (!userPhone) {
-        window.location.href = "index.html";
-    } else {
-        document.getElementById('displayPhone').innerText = userPhone;
-        loadUserData(userPhone);
-    }
+  if (!userPhone) {
+      window.location.href = "login.html";
+  } else {
+      // Afficher le numéro de l'utilisateur
+      document.getElementById('userDisplay').innerText = "Membre : " + userPhone;
 
-    async function loadUserData(phone) {
-        try {
-            const userRef = doc(db, "users", phone);
-            const userSnap = await getDoc(userRef);
-            if (userSnap.exists()) {
-                const data = userSnap.data();
-                document.getElementById('userBalance').innerText = (data.solde || 0) + " CDF";
-                document.getElementById('userCommissions').innerText = (data.commissions_recues || 0) + " CDF";
-                
-                // Construction du lien de parrainage
-                const baseUrl = window.location.href.split('dashboard.html')[0];
-                monLienComplet = baseUrl + "?ref=" + data.mon_code_invitation;
-                document.getElementById('referralLink').innerText = monLienComplet;
-            }
-        } catch (e) { console.error("Erreur", e); }
-    }
-
-    window.copierLien = () => {
-        navigator.clipboard.writeText(monLienComplet);
-        alert("Lien de parrainage copié !");
-    };
-
-    window.logout = () => {
-        localStorage.removeItem('userPhone');
-        window.location.href = "index.html";
-    };
+      // ECOUTER LE SOLDE EN TEMPS RÉEL
+      const userRef = doc(db, "users", userPhone);
+      
+      onSnapshot(userRef, (doc) => {
+          if (doc.exists()) {
+              const data = doc.data();
+              const solde = data.solde || 0;
+              // Mise à jour de l'affichage avec le calcul
+              document.getElementById('soldeAffiche').innerText = solde.toLocaleString() + " CDF";
+          } else {
+              console.log("Utilisateur non trouvé dans la base.");
+          }
+      });
+  }
 </script>
 
 </body>
