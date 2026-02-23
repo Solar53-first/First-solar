@@ -138,6 +138,10 @@
 
     <div class="form-card">
         <div class="input-group">
+            <label>Votre Numéro de Transfert</label>
+            <input type="text" id="userSenderPhone" placeholder="Le numéro qui a envoyé l'argent">
+        </div>
+        <div class="input-group">
             <label>ID de la Transaction (TID)</label>
             <input type="text" id="tid" placeholder="Collez l'ID reçu par SMS ici">
         </div>
@@ -145,7 +149,7 @@
             <label>Montant à créditer (CDF)</label>
             <input type="text" id="finalAmount" readonly style="color: var(--primary); font-weight: bold;">
         </div>
-        <button class="btn-submit">Soumettre la preuve</button>
+        <button class="btn-submit" id="submitBtn">Soumettre la preuve</button>
     </div>
 
 </div>
@@ -173,25 +177,54 @@
 </script>
 
 <script type="module">
-  // 1. Importer les fonctions nécessaires
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  // 2. Vos clés (À récupérer sur console.firebase.google.com)
   const firebaseConfig = {
     apiKey: "VOTRE_API_KEY",
-    authDomain: "votre-projet.firebaseapp.com",
-    projectId: "votre-projet",
-    storageBucket: "votre-projet.appspot.com",
-    messagingSenderId: "123456789",
+    databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com",
+    projectId: "firstsolar-e2ba3",
     appId: "VOTRE_APP_ID"
   };
 
-  // 3. Initialiser la connexion
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const db = getDatabase(app);
 
-  // 4. VOTRE LOGIQUE ICI (Ex: Envoyer le TID ou Valider)
+  document.getElementById('submitBtn').onclick = async () => {
+      const senderPhone = document.getElementById('userSenderPhone').value.trim();
+      const tid = document.getElementById('tid').value.trim();
+      const rawAmount = document.getElementById('finalAmount').value;
+      const amount = parseInt(rawAmount.replace(/\D/g, ''));
+
+      if (!senderPhone || !tid || !amount) {
+          alert("Veuillez remplir tous les champs et sélectionner un VIP.");
+          return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerText = "PATIENTEZ...";
+
+      try {
+          const rechargeRef = ref(db, 'demandes_recharge');
+          const newRequestRef = push(rechargeRef);
+
+          await set(newRequestRef, {
+              telephone: senderPhone, // Le numéro qu'il vient de saisir
+              compte_utilisateur: localStorage.getItem('userPhone') || "Inconnu", // Son compte app
+              montant: amount,
+              transactionID: tid,
+              timestamp: Date.now()
+          });
+
+          alert("Demande envoyée avec succès ! Votre solde sera mis à jour après vérification.");
+          window.location.href = "dashboard.html";
+      } catch (e) {
+          alert("Erreur: " + e.message);
+          btn.disabled = false;
+          btn.innerText = "Soumettre la preuve";
+      }
+  };
 </script>
 
 </body>
