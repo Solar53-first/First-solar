@@ -13,11 +13,14 @@
         .balance-header { background: linear-gradient(to right, rgba(243, 156, 18, 0.2), transparent); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--glass); margin-bottom: 10px; }
         .balance-amount { font-size: 1.4em; font-weight: bold; color: var(--primary); }
         .container { padding: 10px 15px; display: flex; flex-direction: column; gap: 12px; }
-        .product-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--glass); padding: 12px; display: flex; flex-direction: row; align-items: center; }
-        .solar-icon { width: 50px; height: 50px; background: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        
+        /* Ajustement pour inclure les images */
+        .product-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--glass); padding: 12px; display: flex; flex-direction: row; align-items: center; gap: 15px; }
+        .vip-image { width: 70px; height: 70px; border-radius: 10px; border: 2px solid var(--primary); object-fit: cover; }
+        
         .btn-buy { background: var(--primary); color: black; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 15px 0; }
-        .nav-item { color: #666; text-decoration: none; font-size: 0.8em; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid var(--glass); }
+        .nav-item { color: #666; text-decoration: none; font-size: 0.8em; text-align: center; }
         .nav-item.active { color: var(--primary); }
     </style>
 </head>
@@ -49,25 +52,26 @@
     const db = getDatabase(app);
     const userPhone = localStorage.getItem('userPhone');
 
+    // Assignation des images envoyées aux VIP respectifs
     const products = [
-        { id: 1, name: "VIP 1", price: 20000, daily: 4600, total: 207000 },
-        { id: 2, name: "VIP 2", price: 40000, daily: 9200, total: 414000 },
-        { id: 3, name: "VIP 3", price: 75000, daily: 17250, total: 776250 },
-        { id: 4, name: "VIP 4", price: 120000, daily: 27600, total: 1242000 },
-        { id: 5, name: "VIP 5", price: 250000, daily: 57500, total: 2587500 },
-        { id: 6, name: "VIP 6", price: 400000, daily: 92000, total: 4140000 },
-        { id: 7, name: "VIP 7", price: 800000, daily: 184000, total: 8228000 },
-        { id: 8, name: "VIP 8", price: 1200000, daily: 276000, total: 12420000 }
+        { id: 1, name: "VIP 1", price: 20000, daily: 4600, img: "IMG_3032.jpeg" },
+        { id: 2, name: "VIP 2", price: 40000, daily: 9200, img: "IMG_3033.jpeg" },
+        { id: 3, name: "VIP 3", price: 75000, daily: 17250, img: "IMG_3034.jpeg" },
+        { id: 4, name: "VIP 4", price: 120000, daily: 27600, img: "IMG_3035.jpeg" },
+        { id: 5, name: "VIP 5", price: 250000, daily: 57500, img: "IMG_3036.jpeg" },
+        { id: 6, name: "VIP 6", price: 400000, daily: 92000, img: "IMG_3037.jpeg" },
+        { id: 7, name: "VIP 7", price: 800000, daily: 184000, img: "IMG_3038.jpeg" },
+        { id: 8, name: "VIP 8", price: 1200000, daily: 276000, img: "IMG_3039.jpeg" }
     ];
 
-    // Affichage des produits
     const container = document.getElementById('product-list');
     products.forEach(p => {
         container.innerHTML += `
             <div class="product-card">
+                <img src="${p.img}" class="vip-image" alt="${p.name}">
                 <div style="flex-grow:1">
                     <div style="font-weight:bold">${p.name} - ${p.price.toLocaleString()} CDF</div>
-                    <small>Gain : ${p.daily} FC/jour</small>
+                    <small style="color: #27ae60;">Gain : ${p.daily.toLocaleString()} FC/jour</small>
                 </div>
                 <button class="btn-buy" onclick="buyProduct(${p.id})">INVESTIR</button>
             </div>`;
@@ -79,9 +83,8 @@
         });
     }
 
-    // --- LOGIQUE D'ACHAT AVEC COMMISSION 3 NIVEAUX ---
     window.buyProduct = async (productId) => {
-        if (!userPhone) return;
+        if (!userPhone) return alert("Veuillez vous connecter.");
         const product = products.find(p => p.id === productId);
         const userRef = ref(db, 'users/' + userPhone);
         const snap = await get(userRef);
@@ -89,50 +92,40 @@
 
         if (userData.solde < product.price) return alert("Solde insuffisant !");
 
-        if (confirm(`Acheter ${product.name} ?`)) {
-            // 1. Déduire le prix et ajouter le gain quotidien
+        if (confirm(`Acheter ${product.name} pour ${product.price.toLocaleString()} CDF ?`)) {
             await update(userRef, { 
                 solde: userData.solde - product.price,
                 gain_quotidien_actif: (userData.gain_quotidien_actif || 0) + product.daily
             });
 
-            // 2. DISTRIBUTION DES COMMISSIONS (MLM)
+            // MLM : 25% (N1), 3% (N2), 1% (N3)
             const distribution = [
-                { niv: 1, taux: 0.25, parent: userData.parraine_par }, // 25%
-                { niv: 2, taux: 0.03 },                                // 3%
-                { niv: 3, taux: 0.01 }                                 // 1%
+                { taux: 0.25, parent: userData.parraine_par },
+                { taux: 0.03 },
+                { taux: 0.01 }
             ];
 
             let currentParentPhone = userData.parraine_par;
-
             for (let i = 0; i < distribution.length; i++) {
-                if (!currentParentPhone) break; // Stop si plus de parrain
-
+                if (!currentParentPhone) break;
                 const parentRef = ref(db, 'users/' + currentParentPhone);
                 const parentSnap = await get(parentRef);
-
                 if (parentSnap.exists()) {
                     const gain = product.price * distribution[i].taux;
                     const pData = parentSnap.val();
-                    
                     await update(parentRef, {
                         solde: (pData.solde || 0) + gain,
                         gains_invitation: (pData.gains_invitation || 0) + gain
                     });
-
-                    // Passer au parrain du parrain (Niveau suivant)
-                    currentParentPhone = pData.parraine_par; 
-                } else {
-                    break;
-                }
+                    currentParentPhone = pData.parraine_par;
+                } else { break; }
             }
 
-            // 3. Enregistrer le panneau
             await push(ref(db, 'users/' + userPhone + '/mes_panneaux'), {
                 nom: product.name, daily: product.daily, date_achat: new Date().toISOString()
             });
 
-            alert("Investissement réussi !");
+            alert("Investissement réussi ! Vos revenus seront crédités chaque 24h.");
         }
     };
 </script>
