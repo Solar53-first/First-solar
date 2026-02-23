@@ -1,10 +1,92 @@
-<script type="module">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connexion - Fast Solar</title>
 
-// 🔥 Firebase
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.container{
+    background:white;
+    padding:30px;
+    border-radius:12px;
+    width:100%;
+    max-width:400px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.3);
+}
+
+h2{
+    text-align:center;
+    color:#ff8c00;
+    margin-bottom:20px;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    margin-bottom:15px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:14px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:6px;
+    background:#ff8c00;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#e67600;
+}
+
+.link{
+    text-align:center;
+    margin-top:15px;
+}
+
+.link a{
+    color:#ff8c00;
+    text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Connexion Fast Solar</h2>
+
+    <form id="loginForm">
+        <input type="text" id="phone" placeholder="Numéro de téléphone" required>
+        <input type="password" id="password" placeholder="Mot de passe" required>
+        <button type="submit">Se connecter</button>
+    </form>
+
+    <div class="link">
+        Pas encore inscrit ? <a href="inscription.html">Créer un compte</a>
+    </div>
+</div>
+
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// ⚠️ Mets EXACTEMENT les mêmes infos Firebase que dans inscription.html
 const firebaseConfig = {
   apiKey: "VOTRE_API_KEY",
   authDomain: "VOTRE_PROJET.firebaseapp.com",
@@ -17,54 +99,35 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔥 Inputs
-const inputs = document.querySelectorAll("input");
-const phoneInput = inputs[0];
-const passwordInput = inputs[1];
-
-document.getElementById("loginForm").addEventListener("submit", async function(e) {
+document.getElementById("loginForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
 
-    const phone = phoneInput.value.trim();
-    const password = passwordInput.value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-    if (!phone || !password) {
-        alert("Veuillez remplir tous les champs.");
+    const q = query(
+        collection(db,"users"),
+        where("phone","==",phone),
+        where("password","==",password)
+    );
+
+    const snapshot = await getDocs(q);
+
+    if(snapshot.empty){
+        alert("Identifiants incorrects");
         return;
     }
 
-    try {
+    const userDoc = snapshot.docs[0];
 
-        // 🔎 Chercher utilisateur
-        const q = query(
-            collection(db, "users"),
-            where("phone", "==", phone),
-            where("password", "==", password)
-        );
+    localStorage.setItem("user", JSON.stringify({
+        id:userDoc.id,
+        ...userDoc.data()
+    }));
 
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-            alert("Numéro ou mot de passe incorrect.");
-            return;
-        }
-
-        const userDoc = querySnapshot.docs[0];
-        const userData = userDoc.data();
-
-        // 🔥 Sauvegarder session complète
-        localStorage.setItem("user", JSON.stringify({
-            id: userDoc.id,
-            ...userData
-        }));
-
-        // 🔥 Redirection
-        window.location.href = "dashboard.html";
-
-    } catch (error) {
-        alert("Erreur de connexion.");
-        console.error(error);
-    }
+    window.location.href="dashboard.html";
 });
-
 </script>
+
+</body>
+</html>
