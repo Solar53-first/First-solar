@@ -150,17 +150,34 @@
     const db = getDatabase(app);
     const userPhone = localStorage.getItem('userPhone');
 
-    if (!userPhone) { window.location.href = "login.html"; }
+    if (!userPhone) { 
+        window.location.href = "login.html"; 
+    } else {
+        // 1. Charger les infos utilisateur de base
+        const userRef = ref(db, 'users/' + userPhone);
+        onValue(userRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('user-info').innerText = "ID: " + (data.mon_code_invitation || "Solar") + " | +" + userPhone;
+                document.getElementById('avatar-initial').innerText = (data.mon_code_invitation ? data.mon_code_invitation.charAt(0) : "U");
+                // On met quand même le revenu journalier stocké
+                document.getElementById('daily-income').innerText = (data.gain_quotidien_actif || 0).toLocaleString() + " FC";
+            }
+        });
 
-    const userRef = ref(db, 'users/' + userPhone);
-    onValue(userRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            document.getElementById('user-info').innerText = "ID: " + (data.mon_code_invitation || "Solar") + " | +" + userPhone;
-            document.getElementById('daily-income').innerText = (data.gain_quotidien_actif || 0).toLocaleString() + " FC";
-            document.getElementById('avatar-initial').innerText = (data.mon_code_invitation ? data.mon_code_invitation.charAt(6) : "U");
-        }
-    });
+        // 2. COMPTER LES PANNEAUX RÉELS DANS LE DOSSIER 'mes_panneaux'
+        const panelsRef = ref(db, 'users/' + userPhone + '/mes_panneaux');
+        onValue(panelsRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const panelsData = snapshot.val();
+                // Compte le nombre de clés (panneaux) dans l'objet
+                const count = Object.keys(panelsData).length;
+                document.getElementById('active-panels').innerText = count;
+            } else {
+                document.getElementById('active-panels').innerText = "0";
+            }
+        });
+    }
 
     document.getElementById('logoutBtn').onclick = () => { 
         localStorage.clear(); 
