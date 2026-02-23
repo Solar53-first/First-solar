@@ -10,23 +10,19 @@
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: -1; }
         .container { padding: 20px; }
         
-        /* Stats d'équipe */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .stat-card { background: var(--dark-card); padding: 15px; border-radius: 15px; border: 1px solid var(--glass); text-align: center; }
         .stat-card h4 { margin: 0; font-size: 0.8em; opacity: 0.7; }
         .stat-card p { margin: 5px 0 0; font-size: 1.2em; font-weight: bold; color: var(--primary); }
 
-        /* Section Parrainage */
         .invite-box { background: var(--dark-card); padding: 20px; border-radius: 15px; border: 1px solid var(--primary); margin-bottom: 20px; text-align: center; }
         .code-display { font-size: 1.5em; font-weight: bold; color: var(--primary); margin: 10px 0; letter-spacing: 2px; }
         .btn-copy { background: var(--primary); color: black; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 5px; }
 
-        /* Onglets Niveaux */
         .tabs { display: flex; justify-content: space-around; background: var(--dark-card); border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--glass); }
         .tab { padding: 12px; cursor: pointer; font-size: 0.9em; opacity: 0.6; transition: 0.3s; flex: 1; text-align: center; }
         .tab.active { opacity: 1; color: var(--primary); border-bottom: 2px solid var(--primary); }
 
-        /* Liste des membres */
         .member-list { background: var(--dark-card); border-radius: 15px; padding: 10px; min-height: 200px; border: 1px solid var(--glass); }
         .member-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--glass); font-size: 0.9em; }
         .member-item:last-child { border-bottom: none; }
@@ -47,7 +43,7 @@
     <div class="invite-box">
         <p style="margin:0; font-size: 0.9em;">Votre Code d'Invitation</p>
         <div class="code-display" id="myCodeDisplay">...</div>
-        <button class="btn-copy" onclick="copyInviteLink()">Copier le Lien de Parrainage</button>
+        <button class="btn-copy" id="copyBtn">Copier le Lien de Parrainage</button>
     </div>
 
     <div class="stats-grid">
@@ -68,7 +64,7 @@
     </div>
 
     <div class="member-list" id="memberContainer">
-        <div class="no-data">Chargement du réseau...</div>
+        <div class="no-data">Analyse du réseau...</div>
     </div>
 </div>
 
@@ -81,7 +77,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "VOTRE_API_KEY",
@@ -92,7 +88,9 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const userPhone = localStorage.getItem('userPhone');
+    
+    // Nettoyage du numéro pour correspondre à la base
+    const userPhone = localStorage.getItem('userPhone') ? localStorage.getItem('userPhone').replace(/\D/g, '') : null;
 
     if (!userPhone) window.location.href = "login.html";
 
@@ -101,7 +99,6 @@
 
     async function loadNetwork() {
         try {
-            // 1. Récupérer MON code d'invitation
             const selfRef = ref(db, 'users/' + userPhone);
             const selfSnap = await get(selfRef);
             if (!selfSnap.exists()) return;
@@ -113,17 +110,16 @@
 
             const allUsersRef = ref(db, 'users');
             const allSnap = await get(allUsersRef);
+            if (!allSnap.exists()) return;
             const allUsers = allSnap.val();
 
-            // 2. Calculer les Niveaux
-            // Niveau 1
+            // Calcul des Niveaux
             for (let id in allUsers) {
                 if (allUsers[id].parrain_direct === myInviteCode) {
                     network.lv1.push(allUsers[id]);
                 }
             }
 
-            // Niveau 2
             network.lv1.forEach(f1 => {
                 for (let id in allUsers) {
                     if (allUsers[id].parrain_direct === f1.mon_code_invitation) {
@@ -132,7 +128,6 @@
                 }
             });
 
-            // Niveau 3
             network.lv2.forEach(f2 => {
                 for (let id in allUsers) {
                     if (allUsers[id].parrain_direct === f2.mon_code_invitation) {
@@ -141,7 +136,6 @@
                 }
             });
 
-            // Mise à jour des compteurs
             document.getElementById('tab1').innerText = `Niv 1 (${network.lv1.length})`;
             document.getElementById('tab2').innerText = `Niv 2 (${network.lv2.length})`;
             document.getElementById('tab3').innerText = `Niv 3 (${network.lv3.length})`;
@@ -150,9 +144,29 @@
             updateUI(1);
 
         } catch (error) {
-            console.error(error);
+            console.error("Erreur réseau:", error);
         }
     }
+
+    // --- CORRECTION DU LIEN DE PARRAINAGE ---
+    document.getElementById('copyBtn').onclick = () => {
+        // Cette ligne force l'URL à inclure le dossier First-solar
+        const domain = "https://solar53-first.github.io/First-solar/";
+        const fullLink = `${domain}index.html?ref=${myInviteCode}`;
+        
+        navigator.clipboard.writeText(fullLink).then(() => {
+            alert("Lien copié avec succès ! Envoyez-le à vos amis.");
+        }).catch(err => {
+            // Méthode de secours si navigator.clipboard échoue
+            const textArea = document.createElement("textarea");
+            textArea.value = fullLink;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+            alert("Lien copié !");
+        });
+    };
 
     window.switchLevel = (lvl) => {
         document.querySelectorAll('.tab').forEach((t, i) => {
@@ -172,22 +186,16 @@
         }
 
         list.forEach(m => {
+            const telCache = m.telephone ? m.telephone.substring(0,7) + "***" : "Inconnu";
             const date = m.date_inscription ? new Date(m.date_inscription).toLocaleDateString() : "---";
             container.innerHTML += `
                 <div class="member-item">
-                    <span>📱 ${m.telephone.substring(0,7)}***</span>
+                    <span>📱 ${telCache}</span>
                     <span style="color:#27ae60;">${date}</span>
                 </div>
             `;
         });
     }
-
-    window.copyInviteLink = () => {
-        const link = window.location.origin + "/index.html?ref=" + myInviteCode;
-        navigator.clipboard.writeText(link).then(() => {
-            alert("Lien de parrainage copié !");
-        });
-    };
 
     loadNetwork();
 </script>
