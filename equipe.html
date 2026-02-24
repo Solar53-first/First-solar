@@ -20,8 +20,9 @@
         .btn-copy { background: var(--primary); color: black; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 5px; }
 
         .tabs { display: flex; justify-content: space-around; background: var(--dark-card); border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--glass); }
-        .tab { padding: 12px; cursor: pointer; font-size: 0.9em; opacity: 0.6; transition: 0.3s; flex: 1; text-align: center; }
+        .tab { padding: 12px; cursor: pointer; font-size: 0.8em; opacity: 0.6; transition: 0.3s; flex: 1; text-align: center; line-height: 1.4; }
         .tab.active { opacity: 1; color: var(--primary); border-bottom: 2px solid var(--primary); }
+        .tab small { display: block; font-size: 0.7em; color: #27ae60; font-weight: bold; }
 
         .member-list { background: var(--dark-card); border-radius: 15px; padding: 10px; min-height: 200px; border: 1px solid var(--glass); }
         .member-item { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--glass); font-size: 0.9em; }
@@ -58,9 +59,18 @@
     </div>
 
     <div class="tabs">
-        <div class="tab active" id="tab1" onclick="switchLevel(1)">Niv 1 (0)</div>
-        <div class="tab" id="tab2" onclick="switchLevel(2)">Niv 2 (0)</div>
-        <div class="tab" id="tab3" onclick="switchLevel(3)">Niv 3 (0)</div>
+        <div class="tab active" id="tab1" onclick="switchLevel(1)">
+            Niv 1 (0)
+            <small>Bonus 25%</small>
+        </div>
+        <div class="tab" id="tab2" onclick="switchLevel(2)">
+            Niv 2 (0)
+            <small>Bonus 3%</small>
+        </div>
+        <div class="tab" id="tab3" onclick="switchLevel(3)">
+            Niv 3 (0)
+            <small>Bonus 1%</small>
+        </div>
     </div>
 
     <div class="member-list" id="memberContainer">
@@ -77,7 +87,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "VOTRE_API_KEY",
@@ -89,7 +99,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     
-    // Nettoyage du numéro pour correspondre à la base
     const userPhone = localStorage.getItem('userPhone') ? localStorage.getItem('userPhone').replace(/\D/g, '') : null;
 
     if (!userPhone) window.location.href = "login.html";
@@ -97,48 +106,64 @@
     let network = { lv1: [], lv2: [], lv3: [] };
     let myInviteCode = "";
 
+    function startRealTimeUpdates() {
+        const selfRef = ref(db, 'users/' + userPhone);
+        onValue(selfRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                myInviteCode = data.mon_code_invitation;
+                document.getElementById('myCodeDisplay').innerText = myInviteCode || "---";
+                const totalComm = (data.commissions || 0) + (data.gains_invitation || 0);
+                document.getElementById('totalGains').innerText = totalComm.toLocaleString() + " CDF";
+            }
+        });
+    }
+
     async function loadNetwork() {
         try {
-            const selfRef = ref(db, 'users/' + userPhone);
-            const selfSnap = await get(selfRef);
-            if (!selfSnap.exists()) return;
-            
-            const userData = selfSnap.val();
-            myInviteCode = userData.mon_code_invitation;
-            document.getElementById('myCodeDisplay').innerText = myInviteCode;
-            document.getElementById('totalGains').innerText = (userData.commissions || 0).toLocaleString() + " CDF";
-
             const allUsersRef = ref(db, 'users');
             const allSnap = await get(allUsersRef);
             if (!allSnap.exists()) return;
             const allUsers = allSnap.val();
 
-            // Calcul des Niveaux
+            const myData = allUsers[userPhone];
+            if(!myData) return;
+            myInviteCode = myData.mon_code_invitation;
+
+            network = { lv1: [], lv2: [], lv3: [] };
+
             for (let id in allUsers) {
-                if (allUsers[id].parrain_direct === myInviteCode) {
-                    network.lv1.push(allUsers[id]);
+                const u = allUsers[id];
+                if (u.parraine_par === userPhone || u.parrain_direct === myInviteCode) {
+                    network.lv1.push(u);
                 }
             }
 
             network.lv1.forEach(f1 => {
+                const f1Code = f1.mon_code_invitation;
+                const f1Phone = f1.telephone ? f1.telephone.replace(/\D/g, '') : null;
                 for (let id in allUsers) {
-                    if (allUsers[id].parrain_direct === f1.mon_code_invitation) {
-                        network.lv2.push(allUsers[id]);
+                    const u = allUsers[id];
+                    if (u.parraine_par === f1Phone || u.parrain_direct === f1Code) {
+                        network.lv2.push(u);
                     }
                 }
             });
 
             network.lv2.forEach(f2 => {
+                const f2Code = f2.mon_code_invitation;
+                const f2Phone = f2.telephone ? f2.telephone.replace(/\D/g, '') : null;
                 for (let id in allUsers) {
-                    if (allUsers[id].parrain_direct === f2.mon_code_invitation) {
-                        network.lv3.push(allUsers[id]);
+                    const u = allUsers[id];
+                    if (u.parraine_par === f2Phone || u.parrain_direct === f2Code) {
+                        network.lv3.push(u);
                     }
                 }
             });
 
-            document.getElementById('tab1').innerText = `Niv 1 (${network.lv1.length})`;
-            document.getElementById('tab2').innerText = `Niv 2 (${network.lv2.length})`;
-            document.getElementById('tab3').innerText = `Niv 3 (${network.lv3.length})`;
+            document.getElementById('tab1').innerHTML = `Niv 1 (${network.lv1.length}) <small>Bonus 25%</small>`;
+            document.getElementById('tab2').innerHTML = `Niv 2 (${network.lv2.length}) <small>Bonus 3%</small>`;
+            document.getElementById('tab3').innerHTML = `Niv 3 (${network.lv3.length}) <small>Bonus 1%</small>`;
             document.getElementById('totalTeam').innerText = network.lv1.length + network.lv2.length + network.lv3.length;
 
             updateUI(1);
@@ -148,16 +173,13 @@
         }
     }
 
-    // --- CORRECTION DU LIEN DE PARRAINAGE ---
     document.getElementById('copyBtn').onclick = () => {
-        // Cette ligne force l'URL à inclure le dossier First-solar
         const domain = "https://solar53-first.github.io/First-solar/";
         const fullLink = `${domain}index.html?ref=${myInviteCode}`;
         
         navigator.clipboard.writeText(fullLink).then(() => {
-            alert("Lien copié avec succès ! Envoyez-le à vos amis.");
-        }).catch(err => {
-            // Méthode de secours si navigator.clipboard échoue
+            alert("Lien de parrainage copié !");
+        }).catch(() => {
             const textArea = document.createElement("textarea");
             textArea.value = fullLink;
             document.body.appendChild(textArea);
@@ -186,7 +208,8 @@
         }
 
         list.forEach(m => {
-            const telCache = m.telephone ? m.telephone.substring(0,7) + "***" : "Inconnu";
+            const tel = m.telephone || "Inconnu";
+            const telCache = tel.length > 7 ? tel.substring(0,7) + "***" : tel;
             const date = m.date_inscription ? new Date(m.date_inscription).toLocaleDateString() : "---";
             container.innerHTML += `
                 <div class="member-item">
@@ -197,6 +220,7 @@
         });
     }
 
+    startRealTimeUpdates();
     loadNetwork();
 </script>
 </body>
