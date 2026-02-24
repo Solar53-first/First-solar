@@ -15,6 +15,12 @@
         .btn-action { padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; font-size: 1em; transition: 0.3s; }
         .recharge { background: #27ae60; color: white; }
         .retrait { background: white; color: #000; }
+        
+        /* Style de l'animation des images */
+        .animated-banner { width: 100%; height: 180px; border-radius: 15px; margin-bottom: 20px; overflow: hidden; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .animated-banner img { width: 100%; height: 100%; object-fit: cover; position: absolute; opacity: 0; transition: opacity 1s ease-in-out; }
+        .animated-banner img.active { opacity: 1; }
+
         .about-section { background: var(--dark-card); padding: 20px; border-radius: 15px; border: 1px solid var(--glass); line-height: 1.6; backdrop-filter: blur(10px); }
         .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #111; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid var(--glass); z-index: 100; }
         .nav-item { text-align: center; color: #888; text-decoration: none; font-size: 0.8em; }
@@ -35,6 +41,12 @@
         <a href="recharge.html" class="btn-action recharge">📥 Recharger</a>
         <a href="retrait.html" class="btn-action retrait">📤 Retrait</a>
     </div>
+
+    <div class="animated-banner">
+        <img src="IMG_3041.jpeg" class="active">
+        <img src="IMG_3042.jpeg">
+    </div>
+
     <div class="about-section">
         <h3>Notre Vision : Éclairer l'Avenir</h3>
         <p>First Solar permet à chaque citoyen de devenir un acteur majeur de la transition écologique...</p>
@@ -47,6 +59,17 @@
     <a href="equipe.html" class="nav-item">👥 Équipe</a>
     <a href="profil.html" class="nav-item">👤 Profil</a>
 </nav>
+
+<script>
+    // Logique pour faire changer les deux images
+    const slides = document.querySelectorAll('.animated-banner img');
+    let currentSlide = 0;
+    setInterval(() => {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }, 3000); // Change toutes les 3 secondes
+</script>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -73,7 +96,6 @@
                 document.getElementById('userDisplay').innerText = "Membre : +" + data.telephone;
                 document.getElementById('soldeAffiche').innerText = (data.solde || 0).toLocaleString() + " CDF";
                 
-                // --- LOGIQUE DE CRÉDIT AUTOMATIQUE 24H ---
                 const now = new Date().getTime();
                 const lastIncome = data.last_income_timestamp || 0;
                 const gainParJour = data.gain_quotidien_actif || 0;
