@@ -84,53 +84,66 @@
     window.buyProduct = async (productId) => {
         if (!userPhone) return alert("Veuillez vous connecter.");
         const product = products.find(p => p.id === productId);
-        const userRef = ref(db, 'users/' + userPhone);
-        const snap = await get(userRef);
-        const userData = snap.val();
+        
+        try {
+            const userRef = ref(db, 'users/' + userPhone);
+            const userSnap = await get(userRef);
+            const userData = userSnap.val();
 
-        if (userData.solde < product.price) return alert("Solde insuffisant !");
+            if (userData.solde < product.price) return alert("Solde insuffisant !");
 
-        if (confirm(`Acheter ${product.name} pour ${product.price.toLocaleString()} CDF ?`)) {
-            // 1. Déduction du solde et activation du gain quotidien
-            await update(userRef, { 
-                solde: userData.solde - product.price,
-                gain_quotidien_actif: (userData.gain_quotidien_actif || 0) + product.daily
-            });
+            if (confirm(`Acheter ${product.name} pour ${product.price.toLocaleString()} CDF ?`)) {
+                
+                // 1. Déduction solde acheteur
+                await update(userRef, { 
+                    solde: userData.solde - product.price,
+                    gain_quotidien_actif: (userData.gain_quotidien_actif || 0) + product.daily
+                });
 
-            // 2. DISTRIBUTION MLM : N1(25%), N2(3%), N3(1%)
-            const distribution = [0.25, 0.03, 0.01];
-            let currentParentPhone = userData.parraine_par;
+                // 2. DISTRIBUTION MLM RENFORCÉE (3 Niveaux)
+                const allUsersSnap = await get(ref(db, 'users'));
+                const allUsers = allUsersSnap.val();
+                
+                // On commence par le code du parrain direct enregistré chez l'acheteur
+                let currentParrainCode = userData.parrain_direct || userData.parraine_par;
+                const taux = [0.25, 0.03, 0.01]; // 25%, 3%, 1%
 
-            for (let i = 0; i < distribution.length; i++) {
-                if (!currentParentPhone) break;
+                for (let i = 0; i < taux.length; i++) {
+                    if (!currentParrainCode) break;
 
-                const parentRef = ref(db, 'users/' + currentParentPhone);
-                const parentSnap = await get(parentRef);
+                    // On cherche dans TOUTE la base quel utilisateur possède ce code
+                    let parrainId = Object.keys(allUsers).find(key => 
+                        allUsers[key].mon_code_invitation === currentParrainCode || key === currentParrainCode
+                    );
 
-                if (parentSnap.exists()) {
-                    const pData = parentSnap.val();
-                    const gainMLM = product.price * distribution[i];
+                    if (parrainId && allUsers[parrainId]) {
+                        const gain = product.price * taux[i];
+                        const parrainRef = ref(db, 'users/' + parrainId);
+                        
+                        await update(parrainRef, {
+                            solde: (allUsers[parrainId].solde || 0) + gain,
+                            commissions: (allUsers[parrainId].commissions || 0) + gain
+                        });
 
-                    await update(parentRef, {
-                        solde: (pData.solde || 0) + gainMLM,
-                        commissions: (pData.commissions || 0) + gainMLM
-                    });
-
-                    // Passer au parrain du dessus pour le niveau suivant
-                    currentParentPhone = pData.parraine_par;
-                } else {
-                    break; 
+                        // On remonte au parrain suivant pour le prochain niveau
+                        currentParrainCode = allUsers[parrainId].parrain_direct || allUsers[parrainId].parraine_par;
+                    } else {
+                        break; 
+                    }
                 }
+
+                // 3. Archivage de l'achat
+                await push(ref(db, 'users/' + userPhone + '/mes_panneaux'), {
+                    nom: product.name, 
+                    daily: product.daily, 
+                    date_achat: new Date().toISOString()
+                });
+
+                alert("Investissement réussi ! Votre compte et votre lignée de parrainage ont été crédités.");
             }
-
-            // 3. Ajouter aux panneaux achetés de l'utilisateur
-            await push(ref(db, 'users/' + userPhone + '/mes_panneaux'), {
-                nom: product.name, 
-                daily: product.daily, 
-                date_achat: new Date().toISOString()
-            });
-
-            alert("Investissement réussi ! Vos gains et les commissions de parrainage ont été mis à jour.");
+        } catch (error) {
+            console.error(error);
+            alert("Une erreur est survenue lors de l'achat.");
         }
     };
 </script>
