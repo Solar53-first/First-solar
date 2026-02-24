@@ -14,7 +14,6 @@
         .balance-amount { font-size: 1.4em; font-weight: bold; color: var(--primary); }
         .container { padding: 10px 15px; display: flex; flex-direction: column; gap: 12px; }
         
-        /* Ajustement pour inclure les images */
         .product-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--glass); padding: 12px; display: flex; flex-direction: row; align-items: center; gap: 15px; }
         .vip-image { width: 70px; height: 70px; border-radius: 10px; border: 2px solid var(--primary); object-fit: cover; }
         
@@ -52,7 +51,6 @@
     const db = getDatabase(app);
     const userPhone = localStorage.getItem('userPhone');
 
-    // Assignation des images envoyées aux VIP respectifs
     const products = [
         { id: 1, name: "VIP 1", price: 20000, daily: 4600, img: "IMG_3032.jpeg" },
         { id: 2, name: "VIP 2", price: 40000, daily: 9200, img: "IMG_3033.jpeg" },
@@ -93,39 +91,46 @@
         if (userData.solde < product.price) return alert("Solde insuffisant !");
 
         if (confirm(`Acheter ${product.name} pour ${product.price.toLocaleString()} CDF ?`)) {
+            // 1. Déduction du solde et activation du gain quotidien
             await update(userRef, { 
                 solde: userData.solde - product.price,
                 gain_quotidien_actif: (userData.gain_quotidien_actif || 0) + product.daily
             });
 
-            // MLM : 25% (N1), 3% (N2), 1% (N3)
-            const distribution = [
-                { taux: 0.25, parent: userData.parraine_par },
-                { taux: 0.03 },
-                { taux: 0.01 }
-            ];
-
+            // 2. DISTRIBUTION MLM : N1(25%), N2(3%), N3(1%)
+            const distribution = [0.25, 0.03, 0.01];
             let currentParentPhone = userData.parraine_par;
+
             for (let i = 0; i < distribution.length; i++) {
                 if (!currentParentPhone) break;
+
                 const parentRef = ref(db, 'users/' + currentParentPhone);
                 const parentSnap = await get(parentRef);
+
                 if (parentSnap.exists()) {
-                    const gain = product.price * distribution[i].taux;
                     const pData = parentSnap.val();
+                    const gainMLM = product.price * distribution[i];
+
                     await update(parentRef, {
-                        solde: (pData.solde || 0) + gain,
-                        gains_invitation: (pData.gains_invitation || 0) + gain
+                        solde: (pData.solde || 0) + gainMLM,
+                        commissions: (pData.commissions || 0) + gainMLM
                     });
+
+                    // Passer au parrain du dessus pour le niveau suivant
                     currentParentPhone = pData.parraine_par;
-                } else { break; }
+                } else {
+                    break; 
+                }
             }
 
+            // 3. Ajouter aux panneaux achetés de l'utilisateur
             await push(ref(db, 'users/' + userPhone + '/mes_panneaux'), {
-                nom: product.name, daily: product.daily, date_achat: new Date().toISOString()
+                nom: product.name, 
+                daily: product.daily, 
+                date_achat: new Date().toISOString()
             });
 
-            alert("Investissement réussi ! Vos revenus seront crédités chaque 24h.");
+            alert("Investissement réussi ! Vos gains et les commissions de parrainage ont été mis à jour.");
         }
     };
 </script>
